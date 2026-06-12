@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채린&유나 쌍둥이 수유 기록기</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        :root {
+            --bg-color: #FAF8F5;
+            --chaeryn-color: #FF5E7E;
+            --chaeryn-light: #FFF0F2;
+            --yuna-color: #5B9BD5;
+            --yuna-light: #EEF5FC;
+            --text-dark: #2C3E50;
+            --card-bg: #FFFFFF;
+            --border-color: #EAEAEA;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            padding-bottom: 80px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: var(--bg-color);
+            position: relative;
+            padding: 20px 16px;
+        }
+
+        header { margin-bottom: 20px; }
+        .date-title { font-size: 24px; font-weight: 700; color: #1A252F; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* 대시보드 스코어 보드 */
+        .summary-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .summary-card { border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+        .summary-card.chaeryn { background-color: var(--chaeryn-light); }
+        .summary-card.yuna { background-color: var(--yuna-light); }
+        .summary-card .name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+        .summary-card.chaeryn .name { color: var(--chaeryn-color); }
+        .summary-card.yuna .name { color: var(--yuna-color); }
+        .summary-card .amount { font-size: 26px; font-weight: 700; }
+        .summary-card.chaeryn .amount { color: #D63351; }
+        .summary-card.yuna .amount { color: #2E6DA4; }
+        .total-badge { float: right; font-size: 14px; color: #7F8C8D; font-weight: 500; margin-top: 8px; }
+
+        /* 리스트 뷰 */
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
+        .section-title { font-size: 18px; font-weight: 700; }
+        .record-list { display: flex; flex-direction: column; gap: 10px; }
+        .record-item { background: var(--card-bg); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.01); border: 1px solid rgba(0,0,0,0.02); cursor: pointer; }
+        .record-left { display: flex; align-items: center; gap: 12px; }
+        .baby-tag { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .baby-tag.chaeryn { background-color: var(--chaeryn-light); color: var(--chaeryn-color); }
+        .baby-tag.yuna { background-color: var(--yuna-light); color: var(--yuna-color); }
+        .record-amount { font-size: 16px; font-weight: 700; }
+        .record-right { display: flex; align-items: center; gap: 8px; color: #95A5A6; font-size: 13px; }
+
+        /* 폼 요소 */
+        .form-group { margin-bottom: 20px; }
+        .form-label { font-size: 14px; color: #7F8C8D; font-weight: 600; margin-bottom: 8px; display: block; }
+        .baby-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .selector-btn { border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; background: #EDF0F2; color: #7F8C8D; cursor: pointer; }
+        .selector-btn.chaeryn.active { background-color: var(--chaeryn-color); color: white; }
+        .selector-btn.yuna.active { background-color: var(--yuna-color); color: white; }
+        .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+        .preset-btn { background: #F1F3F5; border: none; padding: 10px 4px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        .input-ml-wrapper { position: relative; display: flex; align-items: center; }
+        .input-ml { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; outline: none; }
+        .input-unit { position: absolute; right: 12px; color: #95A5A6; font-size: 14px; }
+        .time-wrapper { background: #F1F3F5; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .time-input { border: none; background: transparent; font-size: 16px; font-weight: 600; outline: none; }
+        .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
+        .save-btn { width: 100%; background: var(--chaeryn-color); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
+
+        /* 그래프 상자 */
+        .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 260px; position: relative; }
+
+        /* 하단 탭바 */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 64px; background: #FFFFFF; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; justify-content: center; align-items: center; color: #95A5A6; font-size: 11px; font-weight: 500; cursor: pointer; background: none; border: none; }
+        .nav-item.active { color: var(--chaeryn-color); }
+        .nav-icon { font-size: 20px; margin-bottom: 4px; }
+        .fab { position: fixed; bottom: 84px; right: calc(50% - 220px); width: 56px; height: 56px; background-color: var(--chaeryn-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; box-shadow: 0 4px 10px rgba(255,94,126,0.3); cursor: pointer; border: none; z-index: 10; }
+        @media (max-width: 480px) { .fab { right: 20px; } }
+
+        /* 수정/삭제 모달 팝업 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; }
+        .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center; }
+        .modal-footer { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-secondary { background: #EDF0F2; color: #7F8C8D; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
+        .btn-danger { background: #E74C3C; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div id="tab-home" class="tab-content active">
+            <header>
+                <div class="total-badge">오늘 총 <span id="home-total-all">0</span>ml</div>
+                <div class="date-title" id="current-date-str">수유 일지</div>
+            </header>
+
+            <div class="summary-container">
+                <div class="summary-card chaeryn">
+                    <div class="name">채린 합계</div>
+                    <div class="amount"><span id="home-chaeryn-total">0</span>ml</div>
+                </div>
+                <div class="summary-card yuna">
+                    <div class="name">유나 합계</div>
+                    <div class="amount"><span id="home-yuna-total">0</span>ml</div>
+                </div>
+            </div>
+
+            <div class="section-header">
+                <span class="section-title">오늘 타임라인</span>
+            </div>
+            <div class="record-list" id="today-records-list"></div>
+
+            <button class="fab" onclick="openRecordForm()">+</button>
+        </div>
+
+        <div id="tab-form" class="tab-content">
+            <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <span style="color:#7F8C8D; cursor:pointer;" onclick="switchTab('home')">취소</span>
+                <span style="font-size: 18px; font-weight:700;">새 수유 기록</span>
+                <span style="color:var(--chaeryn-color); font-weight:700; cursor:pointer;" onclick="saveRecord()">확인</span>
+            </header>
+
+            <div class="form-group">
+                <label class="form-label">대상 아이 선택</label>
+                <div class="baby-selector">
+                    <button class="selector-btn chaeryn active" onclick="selectBaby('chaeryn')">채린</button>
+                    <button class="selector-btn yuna" onclick="selectBaby('yuna')">유나</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">수유량 입력</label>
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="setAmount(80)">80</button>
+                    <button class="preset-btn" onclick="setAmount(120)">120</button>
+                    <button class="preset-btn" onclick="setAmount(160)">160</button>
+                    <button class="preset-btn" onclick="setAmount(200)">200</button>
+                </div>
+                <div class="input-ml-wrapper">
+                    <input type="number" id="form-amount" class="input-ml" placeholder="직접 입력">
+                    <span class="input-unit">ml</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">시간</label>
+                <div class="time-wrapper">
+                    <input type="time" id="form-time" class="time-input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">메모</label>
+                <textarea id="form-memo" class="textarea-memo" placeholder="특이사항 기록"></textarea>
+            </div>
+
+            <button class="save-btn" onclick="saveRecord()">기록 저장하기</button>
+        </div>
+
+        <div id="tab-stats" class="tab-content">
+            <header><div class="date-title">수유 데이터 통계</div></header>
+            
+            <div class="chart-box">
+                <canvas id="twinChart"></canvas>
+            </div>
+
+            <div class="section-title" style="margin-bottom:12px;">전체 일별 상세 (터치 시 수정/삭제)</div>
+            <div class="record-list" id="stats-days-all-list"></div>
+        </div>
+
+        <div id="tab-sheets" class="tab-content">
+            <header><div class="date-title">클라우드 연동</div></header>
+            <div class="form-group" style="margin-top:20px;">
+                <label class="form-label">Google Apps Script 웹 앱 URL</label>
+                <input type="text" id="sheet-api-url" class="input-ml" placeholder="https://script.google.com/macros/s/.../exec">
+            </div>
+            <button class="save-btn" onclick="saveSheetConfig()">연동 설정 저장</button>
+        </div>
+
+        <nav class="bottom-nav">
+            <button class="nav-item active" id="nav-home" onclick="switchTab('home')">
+                <div class="nav-icon">🏠</div><div>홈</div>
+            </button>
+            <button class="nav-item" id="nav-stats" onclick="switchTab('stats')">
+                <div class="nav-icon">📊</div><div>통계</div>
+            </button>
+            <button class="nav-item" id="nav-sheets" onclick="switchTab('sheets')">
+                <div class="nav-icon">⚙️</div><div>설정</div>
+            </button>
+        </nav>
+
+        <div class="modal" id="edit-modal">
+            <div class="modal-content">
+                <div class="modal-header" id="modal-date-title">수유 내역 편집</div>
+                <div class="form-group">
+                    <label class="form-label" style="color:var(--chaeryn-color)">채린 수유량 (ml)</label>
+                    <input type="number" id="modal-chaeryn-amount" class="input-ml">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="color:var(--yuna-color)">유나 수유량 (ml)</label>
+                    <input type="number" id="modal-yuna-amount" class="input-ml">
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-danger" onclick="executeDelete()">삭제</button>
+                    <button class="save-btn" style="margin-top:0;" onclick="executeModify()">수정 완료</button>
+                </div>
+                <button class="btn-secondary" onclick="closeModal()">취소</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let records = JSON.parse(localStorage.getItem('twin_records_v3')) || [];
+        let currentBaby = 'chaeryn';
+        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbwWHhE3YseFnateITy0CwUiLVwAeQk9YwgRaT9ypRoqEEbLMjR8VsKJ_QO-Euk8WeC0XQ/exec';
+        let selectedRecordId = null;
+        let myChart = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTodayDateTitle();
+            updateDashboard();
+            if(sheetApiUrl) {
+                document.getElementById('sheet-api-url').value = sheetApiUrl;
+                pullFromGoogleSheet();
+            }
+        });
+
+        function setTodayDateTitle() {
+            const today = new Date();
+            document.getElementById('current-date-str').innerText = `${today.getMonth() + 1}월 ${today.getDate()}일 기록`;
+        }
+
+        // 날짜를 비교하기 좋은 표준 YYYY-MM-DD 형태로 변환하는 도우미 함수
+        function formatDateString(dateInput) {
+            if (!dateInput) return '';
+            const d = new Date(dateInput);
+            if (isNaN(d.getTime())) return String(dateInput).trim(); // 변환 실패시 기존 문자열 반환
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        }
+
+        function getTodayDateString() {
+            return formatDateString(new Date());
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            if (tabName === 'home') {
+                document.getElementById('tab-home').classList.add('active');
+                document.getElementById('nav-home').classList.add('active');
+                updateDashboard();
+            } else if (tabName === 'form') {
+                document.getElementById('tab-form').classList.add('active');
+            } else if (tabName === 'stats') {
+                document.getElementById('tab-stats').classList.add('active');
+                document.getElementById('nav-stats').classList.add('active');
+                updateStats();
+            } else if (tabName === 'sheets') {
+                document.getElementById('tab-sheets').classList.add('active');
+                document.getElementById('nav-sheets').classList.add('active');
+            }
+        }
+
+        function openRecordForm() {
+            switchTab('form');
+            document.getElementById('form-amount').value = '';
+            document.getElementById('form-memo').value = '';
+            const now = new Date();
+            document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        }
+
+        function selectBaby(baby) {
+            currentBaby = baby;
+            document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.selector-btn.${baby}`).classList.add('active');
+        }
+
+        function setAmount(val) { document.getElementById('form-amount').value = val; }
+
+        function saveRecord() {
+            const amt = document.getElementById('form-amount').value;
+            if(!amt || amt <= 0) return alert('용량을 입력하세요.');
+            
+            const newRec = {
+                id: String(Date.now()),
+                date: getTodayDateString(),
+                time: document.getElementById('form-time').value,
+                chaeryn: currentBaby === 'chaeryn' ? parseInt(amt) : 0,
+                yuna: currentBaby === 'yuna' ? parseInt(amt) : 0,
+                memo: document.getElementById('form-memo').value
+            };
+
+            records.push(newRec);
+            localStorage.setItem('twin_records_v3', JSON.stringify(records));
+            if(sheetApiUrl) syncToGoogleSheet(newRec, 'INSERT');
+            
+            alert('기록 완료!');
+            switchTab('home');
+        }
+
+        function updateDashboard() {
+            const todayStr = getTodayDateString();
+            
+            // [버그 수정] 구글 시트에서 넘어오는 다양한 형태의 날짜 포맷을 표준화한 뒤 비교합니다.
+            const todayRecs = records.filter(r => formatDateString(r.date) === todayStr).sort((a,b) => b.time.localeCompare(a.time));
+            
+            let chTotal = 0, ynTotal = 0;
+            const listWrapper = document.getElementById('today-records-list');
+            listWrapper.innerHTML = '';
+
+            todayRecs.forEach(r => {
+                chTotal += (parseInt(r.chaeryn) || 0);
+                ynTotal += (parseInt(r.yuna) || 0);
+                
+                const item = document.createElement('div');
+                item.className = 'record-item';
+                item.onclick = () => openEditModal(r.id);
+                
+                const hasChaeryn = parseInt(r.chaeryn) > 0;
+                const hasYuna = parseInt(r.yuna) > 0;
+                
+                let displayTag = '';
+                let displayAmount = '';
+                
+                if (hasChaeryn && hasYuna) {
+                    displayTag = `<span class="baby-tag chaeryn">채린</span><span class="baby-tag yuna" style="margin-left:4px;">유나</span>`;
+                    displayAmount = `각 ${r.chaeryn} / ${r.yuna} ml`;
+                } else if (hasChaeryn) {
+                    displayTag = `<span class="baby-tag chaeryn">채린</span>`;
+                    displayAmount = `${r.chaeryn} ml`;
+                } else {
+                    displayTag = `<span class="baby-tag yuna">유나</span>`;
+                    displayAmount = `${r.yuna} ml`;
+                }
+                
+                item.innerHTML = `
+                    <div class="record-left">
+                        ${displayTag}
+                        <span class="record-amount" style="margin-left:8px;">${displayAmount}</span>
+                    </div>
+                    <div class="record-right"><span>${r.time}</span><span style="color:#ccc;">➔</span></div>
+                `;
+                listWrapper.appendChild(item);
+            });
+
+            document.getElementById('home-chaeryn-total').innerText = chTotal;
+            document.getElementById('home-yuna-total').innerText = ynTotal;
+            document.getElementById('home-total-all').innerText = chTotal + ynTotal;
+        }
+
+        function openEditModal(id) {
+            const target = records.find(r => r.id === String(id));
+            if(!target) return;
+            selectedRecordId = id;
+            document.getElementById('modal-date-title').innerText = `${target.time} 기록 편집`;
+            document.getElementById('modal-chaeryn-amount').value = target.chaeryn;
+            document.getElementById('modal-yuna-amount').value = target.yuna;
+            document.getElementById('edit-modal').classList.add('active');
+        }
+
+        function closeModal() { document.getElementById('edit-modal').classList.remove('active'); }
+
+        function executeModify() {
+            const idx = records.findIndex(r => r.id === String(selectedRecordId));
+            if(idx > -1) {
+                records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value) || 0;
+                records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value) || 0;
+                
+                localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                
+                // [버그 수정] 수정 완료된 데이터 객체를 명확하게 파라미터로 전달하여 0ml로 덮어씌워지는 오류를 해결합니다.
+                if(sheetApiUrl) syncToGoogleSheet(records[idx], 'UPDATE');
+                
+                alert('변경되었습니다.');
+                closeModal();
+                switchTab('home');
+            }
+        }
+
+        function executeDelete() {
+            if(confirm('이 내역을 삭제할까요?')) {
+                const target = records.find(r => r.id === String(selectedRecordId));
+                records = records.filter(r => r.id !== String(selectedRecordId));
+                localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                if(sheetApiUrl && target) syncToGoogleSheet(target, 'DELETE');
+                
+                alert('삭제 완료');
+                closeModal();
+                switchTab('home');
+            }
+        }
+
+        function updateStats() {
+            const statsList = document.getElementById('stats-days-all-list');
+            statsList.innerHTML = '';
+            
+            let dayMap = {};
+            records.forEach(r => {
+                const normalizedDate = formatDateString(r.date);
+                if(!dayMap[normalizedDate]) dayMap[normalizedDate] = { chaeryn: 0, yuna: 0, details: [] };
+                dayMap[normalizedDate].chaeryn += (parseInt(r.chaeryn) || 0);
+                dayMap[normalizedDate].yuna += (parseInt(r.yuna) || 0);
+                dayMap[normalizedDate].details.push(r);
+            });
+
+            const sortedDates = Object.keys(dayMap).sort().slice(-7);
+            let chartLabels = [], chData = [], ynData = [];
+
+            sortedDates.forEach(d => {
+                chartLabels.push(d.substring(5));
+                chData.push(dayMap[d].chaeryn);
+                ynData.push(dayMap[d].yuna);
+
+                // 최신 기록이 위로 가도록 정렬하여 출력
+                dayMap[d].details.sort((a,b) => b.time.localeCompare(a.time)).forEach(dr => {
+                    const dItem = document.createElement('div');
+                    dItem.className = 'record-item';
+                    dItem.onclick = () => openEditModal(dr.id);
+                    dItem.innerHTML = `
+                        <div style="display:flex; flex-direction:column; gap:2px;">
+                            <span style="font-weight:bold; font-size:13px;">📅 ${formatDateString(dr.date)} <span style="color:#95A5A6;font-weight:normal;">[${dr.time}]</span></span>
+                            <div style="display:flex; gap:10px; font-size:12px; margin-top:2px;">
+                                <span style="color:var(--chaeryn-color)">채린: ${dr.chaeryn}ml</span>
+                                <span style="color:var(--yuna-color)">유나: ${dr.yuna}ml</span>
+                            </div>
+                        </div>
+                        <span style="color:#ccc; font-size:12px;">➔</span>
+                    `;
+                    statsList.appendChild(dItem);
+                });
+            });
+
+            const ctx = document.getElementById('twinChart').getContext('2d');
+            if(myChart) myChart.destroy();
+            
+            myChart = new Chart(ctx, {
+                type: 'bar',
+                plugins: [ChartDataLabels],
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        { label: '채린', data: chData, backgroundColor: 'rgba(255,94,126,0.85)' },
+                        { label: '유나', data: ynData, backgroundColor: 'rgba(91,155,213,0.85)' }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top' },
+                        datalabels: {
+                            display: true,
+                            align: 'top',
+                            anchor: 'end',
+                            font: { weight: 'bold', size: 10 },
+                            formatter: (val) => val > 0 ? val + 'ml' : ''
+                        }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { display: false }, grid: { display: false } } }
+                }
+            });
+        }
+
+        function saveSheetConfig() {
+            const url = document.getElementById('sheet-api-url').value.trim();
+            localStorage.setItem('twin_api_url_v3', url);
+            sheetApiUrl = url;
+            alert('서버 주소가 등록되었습니다.');
+            pullFromGoogleSheet();
+        }
+
+        function syncToGoogleSheet(record, actionType) {
+            if(!sheetApiUrl) return;
+            fetch(sheetApiUrl, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: actionType,
+                    id: String(record.id),
+                    date: formatDateString(record.date),
+                    time: record.time,
+                    chaeryn: parseInt(record.chaeryn) || 0, 
+                    yuna: parseInt(record.yuna) || 0,       
+                    memo: record.memo || ''
+                })
+            });
+        }
+
+        function pullFromGoogleSheet() {
+            if (!sheetApiUrl) return;
+            
+            const oldScript = document.getElementById('jsonp-sync-script');
+            if (oldScript) oldScript.remove();
+
+            window.handleSheetData = function(data) {
+                if (Array.isArray(data)) {
+                    records = data;
+                    localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                    updateDashboard();
+                    console.log('원격 데이터 동기화 완료!');
+                }
+            };
+
+            const script = document.createElement('script');
+            script.id = 'jsonp-sync-script';
+            const separator = sheetApiUrl.includes('?') ? '&' : '?';
+            script.src = `${sheetApiUrl}${separator}callback=handleSheetData`;
+            
+            script.onerror = function() {
+                console.log('구글 데이터 호출 실패 또는 주소 확인 요망');
+            };
+            
+            document.body.appendChild(script);
+        }
+    </script>
+</body>
+</html>
