@@ -26,9 +26,15 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
             background-color: var(--bg-color);
             color: var(--text-dark);
+            overflow-x: hidden;
+            /* 모바일 브라우저 자체의 기본 pull-to-refresh 기능을 차단하여 커스텀 기능과 충돌 방지 */
+            overscroll-behavior-y: contain; 
+        }
+
+        body {
             padding-bottom: 80px;
             display: flex;
             justify-content: center;
@@ -42,6 +48,38 @@
             position: relative;
             padding: 20px 16px;
         }
+
+        /* 고정형 상단 새로고침 인디케이터 바 */
+        .ptr-bar {
+            width: 100%;
+            height: 0;
+            overflow: hidden;
+            background: #F1F3F5;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 13px;
+            color: #7F8C8D;
+            font-weight: 600;
+            margin-bottom: 0;
+            transition: height 0.2s ease, margin-bottom 0.2s ease;
+        }
+        .ptr-bar.active {
+            height: 44px;
+            margin-bottom: 16px;
+        }
+        .ptr-spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid #ccc;
+            border-top: 2px solid var(--chaeryn-color);
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         header { margin-bottom: 20px; }
         .date-title { font-size: 24px; font-weight: 700; color: #1A252F; }
@@ -116,6 +154,11 @@
     <div class="app-container">
         
         <div id="tab-home" class="tab-content active">
+            <div class="ptr-bar" id="ptr-bar">
+                <div class="ptr-spinner" id="ptr-spinner"></div>
+                <span id="ptr-text">↓ 아래로 당겨서 구글 시트 동기화</span>
+            </div>
+
             <header>
                 <div class="total-badge">오늘 총 <span id="home-total-all">0</span>ml</div>
                 <div class="date-title" id="current-date-str">수유 일지</div>
@@ -240,13 +283,19 @@
     <script>
         let records = JSON.parse(localStorage.getItem('twin_records_v3')) || [];
         let currentBaby = 'chaeryn';
-        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbwWHhE3YseFnateITy0CwUiLVwAeQk9YwgRaT9ypRoqEEbLMjR8VsKJ_QO-Euk8WeC0XQ/exec';
+        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || '';
         let selectedRecordId = null;
         let myChart = null;
+        let currentTab = 'home';
+
+        // 당겨서 새로고침 간소화 제어 변수
+        let touchStartY = 0;
+        let isSyncing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             setTodayDateTitle();
             updateDashboard();
+            initSimplifiedPullToRefresh(); // 새 동기화 엔진 구동
             if(sheetApiUrl) {
                 document.getElementById('sheet-api-url').value = sheetApiUrl;
                 pullFromGoogleSheet();
@@ -258,11 +307,10 @@
             document.getElementById('current-date-str').innerText = `${today.getMonth() + 1}월 ${today.getDate()}일 기록`;
         }
 
-        // 날짜를 비교하기 좋은 표준 YYYY-MM-DD 형태로 변환하는 도우미 함수
         function formatDateString(dateInput) {
             if (!dateInput) return '';
             const d = new Date(dateInput);
-            if (isNaN(d.getTime())) return String(dateInput).trim(); // 변환 실패시 기존 문자열 반환
+            if (isNaN(d.getTime())) return String(dateInput).trim();
             return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         }
 
@@ -271,6 +319,7 @@
         }
 
         function switchTab(tabName) {
+            currentTab = tabName;
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
@@ -329,8 +378,6 @@
 
         function updateDashboard() {
             const todayStr = getTodayDateString();
-            
-            // [버그 수정] 구글 시트에서 넘어오는 다양한 형태의 날짜 포맷을 표준화한 뒤 비교합니다.
             const todayRecs = records.filter(r => formatDateString(r.date) === todayStr).sort((a,b) => b.time.localeCompare(a.time));
             
             let chTotal = 0, ynTotal = 0;
@@ -396,8 +443,6 @@
                 records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value) || 0;
                 
                 localStorage.setItem('twin_records_v3', JSON.stringify(records));
-                
-                // [버그 수정] 수정 완료된 데이터 객체를 명확하게 파라미터로 전달하여 0ml로 덮어씌워지는 오류를 해결합니다.
                 if(sheetApiUrl) syncToGoogleSheet(records[idx], 'UPDATE');
                 
                 alert('변경되었습니다.');
@@ -440,7 +485,6 @@
                 chData.push(dayMap[d].chaeryn);
                 ynData.push(dayMap[d].yuna);
 
-                // 최신 기록이 위로 가도록 정렬하여 출력
                 dayMap[d].details.sort((a,b) => b.time.localeCompare(a.time)).forEach(dr => {
                     const dItem = document.createElement('div');
                     dItem.className = 'record-item';
@@ -516,8 +560,11 @@
             });
         }
 
-        function pullFromGoogleSheet() {
-            if (!sheetApiUrl) return;
+        function pullFromGoogleSheet(onComplete) {
+            if (!sheetApiUrl) {
+                if(onComplete) onComplete();
+                return;
+            }
             
             const oldScript = document.getElementById('jsonp-sync-script');
             if (oldScript) oldScript.remove();
@@ -526,9 +573,11 @@
                 if (Array.isArray(data)) {
                     records = data;
                     localStorage.setItem('twin_records_v3', JSON.stringify(records));
-                    updateDashboard();
+                    if (currentTab === 'home') updateDashboard();
+                    else if (currentTab === 'stats') updateStats();
                     console.log('원격 데이터 동기화 완료!');
                 }
+                if(onComplete) onComplete();
             };
 
             const script = document.createElement('script');
@@ -537,10 +586,60 @@
             script.src = `${sheetApiUrl}${separator}callback=handleSheetData`;
             
             script.onerror = function() {
-                console.log('구글 데이터 호출 실패 또는 주소 확인 요망');
+                console.log('구글 데이터 호출 실패');
+                if(onComplete) onComplete();
             };
             
             document.body.appendChild(script);
+        }
+
+        // [완전 재구현] 표준 브라우저 스크롤 연동 방식의 당겨서 새로고침
+        function initSimplifiedPullToRefresh() {
+            const bar = document.getElementById('ptr-bar');
+            const spinner = document.getElementById('ptr-spinner');
+            const text = document.getElementById('ptr-text');
+
+            window.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0 && !isSyncing) {
+                    touchStartY = e.touches[0].clientY;
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchmove', (e) => {
+                if (touchStartY === 0 || isSyncing || window.scrollY > 0) return;
+                
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - touchStartY;
+
+                // 스크롤이 맨 위인 상태에서 아래로 80px 이상 끌어내렸을 때 조건 활성화
+                if (diff > 80 && (currentTab === 'home' || currentTab === 'stats')) {
+                    bar.classList.add('active');
+                    text.innerText = '놓으면 동기화 시작';
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                touchStartY = 0;
+                
+                // '놓으면 동기화 시작' 상태에서 손을 뗐을 때 작동
+                if (bar.classList.contains('active') && !isSyncing) {
+                    isSyncing = true;
+                    spinner.style.display = 'inline-block';
+                    text.innerText = '구글 시트 데이터 가져오는 중...';
+
+                    pullFromGoogleSheet(() => {
+                        // 완료 후 안전하게 롤백 초기화
+                        setTimeout(() => {
+                            bar.classList.remove('active');
+                            spinner.style.display = 'none';
+                            text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                            isSyncing = false;
+                        }, 600);
+                    });
+                } else if (!isSyncing) {
+                    bar.classList.remove('active');
+                }
+            });
         }
     </script>
 </body>
