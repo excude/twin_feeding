@@ -37,9 +37,6 @@
             padding-bottom: 80px;
             display: flex;
             justify-content: center;
-            /* 기본 드래그 선택만 방지하고 스크롤은 허용 */
-            user-select: none;
-            -webkit-user-select: none;
         }
 
         .app-container {
@@ -122,7 +119,7 @@
         
         .twin-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
         .input-ml-wrapper { position: relative; display: flex; align-items: center; }
-        .input-ml { width: 100%; padding: 14px 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 16px; font-weight: bold; outline: none; transition: all 0.2s ease; user-select: text; -webkit-user-select: text; }
+        .input-ml { width: 100%; padding: 14px 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 16px; font-weight: bold; outline: none; transition: all 0.2s ease; }
         .input-ml.chaeryn-field:focus { border-color: var(--chaeryn-color); background-color: var(--chaeryn-light); box-shadow: 0 0 0 3px rgba(255,94,126,0.15); }
         .input-ml.yuna-field:focus { border-color: var(--yuna-color); background-color: var(--yuna-light); box-shadow: 0 0 0 3px rgba(91,155,213,0.15); }
         .input-unit { position: absolute; right: 12px; color: #95A5A6; font-size: 13px; font-weight: normal; }
@@ -132,7 +129,7 @@
         
         .time-wrapper { background: #F1F3F5; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
         .time-input { border: none; background: transparent; font-size: 16px; font-weight: 600; outline: none; }
-        .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; user-select: text; -webkit-user-select: text; }
+        .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
         .save-btn { width: 100%; background: var(--chaeryn-color); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
         .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 260px; position: relative; }
@@ -224,11 +221,11 @@
 
                 <div class="preset-grid">
                     <button class="preset-btn" onclick="setFocusedAmount(0)">0</button>
-                    <button class="preset-btn" onclick="setAmountWithOffset(30)">30</button>
-                    <button class="preset-btn" onclick="setAmountWithOffset(60)">60</button>
+                    <button class="preset-btn" onclick="setAmountWithOffset(10)">+10</button>
+                    <button class="preset-btn" onclick="setAmountWithOffset(-10)">-10</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(90)">90</button>
                     <button class="preset-btn" onclick="setFocusedAmount(120)">120</button>
-                    <button class="preset-btn" onclick="setFocusedAmount(140)">140</button>
-                    <button class="preset-btn" onclick="setFocusedAmount(160)">160</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(150)">150</button>
                     <button class="preset-btn" onclick="setFocusedAmount(180)">180</button>
                     <button class="preset-btn" onclick="setFocusedAmount(210)">210</button>
                 </div>
@@ -315,11 +312,7 @@
         
         let focusedField = 'chaeryn'; 
 
-        let ptrTracker = {
-            startY: 0,
-            isDragging: false,
-            activeTriggered: false
-        };
+        let touchStartY = 0;
         let isSyncing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -328,7 +321,7 @@
             localStorage.setItem('twin_records_v3', JSON.stringify(records));
             
             updateDashboard();
-            initUnifiedPullToRefresh();
+            initSimplifiedPullToRefresh();
             if(sheetApiUrl) {
                 document.getElementById('sheet-api-url').value = sheetApiUrl;
                 pullFromGoogleSheet();
@@ -403,10 +396,13 @@
             }
         }
 
+        // [수정] 증감값 처리 시 음수가 되지 않도록 보호 로직 추가
         function setAmountWithOffset(offset) {
             const id = focusedField === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna';
             const currentVal = parseInt(document.getElementById(id).value, 10) || 0;
-            document.getElementById(id).value = currentVal + offset;
+            let finalVal = currentVal + offset;
+            if (finalVal < 0) finalVal = 0; // 마이너스 방지
+            document.getElementById(id).value = finalVal;
         }
 
         function sortRecordsNewestFirst(arr) {
@@ -416,9 +412,12 @@
                 const dateB = formatDateString(b.date);
                 if (dateB !== dateA) return dateB.localeCompare(dateA); 
                 
-                const timeA = String(a.time || '00:00');
-                const timeB = String(b.time || '00:00');
-                return timeB.localeCompare(timeA); 
+                const parseTime = (timeStr) => {
+                    const parts = String(timeStr || '00:00').split(':');
+                    return (parseInt(parts[0], 10) || 0) * 60 + (parseInt(parts[1], 10) || 0);
+                };
+                
+                return parseTime(b.time) - parseTime(a.time); 
             });
         }
 
@@ -453,6 +452,7 @@
 
         function updateDashboard() {
             const todayStr = getTodayDateString();
+            
             records = sortRecordsNewestFirst(records);
             let todayRecs = records.filter(r => formatDateString(r.date) === todayStr);
             
@@ -694,52 +694,41 @@
             document.body.appendChild(script);
         }
 
-        function initUnifiedPullToRefresh() {
+        function initSimplifiedPullToRefresh() {
             const bar = document.getElementById('ptr-bar');
             const spinner = document.getElementById('ptr-spinner');
             const text = document.getElementById('ptr-text');
 
-            function startDrag(clientY) {
-                if (window.scrollY === 0 && !isSyncing && (currentTab === 'home' || currentTab === 'stats')) {
-                    ptrTracker.startY = clientY;
-                    ptrTracker.isDragging = true;
-                    ptrTracker.activeTriggered = false;
+            window.addEventListener('touchstart', (e) => {
+                if (window.scrollY === 0 && !isSyncing) {
+                    touchStartY = e.touches[0].clientY;
                 }
-            }
+            }, { passive: true });
 
-            function moveDrag(clientY, event) {
-                if (!ptrTracker.isDragging || isSyncing || window.scrollY > 0) return;
+            window.addEventListener('touchmove', (e) => {
+                if (touchStartY === 0 || isSyncing || window.scrollY > 0) return;
                 
-                const diff = clientY - ptrTracker.startY;
+                const currentY = e.touches[0].clientY;
+                const diff = currentY - touchStartY;
 
-                // 아래 방향으로 실제 드래그 동작이 일어날 때만 브라우저 이벤트를 인터셉트함
-                if (diff > 0) {
-                    if (event && typeof event.cancelable === 'boolean' && event.cancelable) {
-                        event.preventDefault(); 
-                    }
-                    
-                    if (diff > 80) {
-                        bar.classList.add('active');
-                        text.innerText = '놓으면 동기화 시작';
-                        ptrTracker.activeTriggered = true;
-                    } else {
-                        bar.style.height = Math.min(diff, 44) + 'px';
-                        bar.style.marginBottom = '12px';
-                    }
-                }
-            }
-
-            function endDrag() {
-                if (!ptrTracker.isDragging) return;
-                ptrTracker.isDragging = false;
-                bar.style.height = ''; 
-                bar.style.marginBottom = '';
-
-                if (ptrTracker.activeTriggered && !isSyncing) {
-                    isSyncing = true;
+                if (diff > 80 && (currentTab === 'home' || currentTab === 'stats')) {
                     bar.classList.add('active');
+                    text.innerText = '놓으면 동기화 시작';
+                }
+            }, { passive: true });
+
+            window.addEventListener('touchend', () => {
+                touchStartY = 0;
+                
+                if (bar.classList.contains('active') && !isSyncing) {
+                    isSyncing = true;
                     spinner.style.display = 'inline-block';
-                    text.innerText = '구글 시트 데이터 가져오는 중...';
+                    text.innerText = '기존 데이터 초기화 및 서버 연동 중...';
+
+                    records = [];
+                    localStorage.removeItem('twin_records_v3');
+                    if (currentTab === 'home') updateDashboard();
+                    else if (currentTab === 'stats') updateStats();
 
                     pullFromGoogleSheet(() => {
                         setTimeout(() => {
@@ -749,31 +738,10 @@
                             isSyncing = false;
                         }, 600);
                     });
-                } else {
+                } else if (!isSyncing) {
                     bar.classList.remove('active');
                 }
-            }
-
-            // 모바일 터치 이벤트
-            window.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
-            window.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY, e), { passive: false });
-            window.addEventListener('touchend', endDrag, { passive: true });
-
-            // PC 마우스 드래그 이벤트 (마우스 휠 스크롤과 충돌 차단 처리 완료)
-            window.addEventListener('mousedown', (e) => {
-                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
-                // 왼쪽 마우스 클릭(0)일 때만 작동하도록 제한하여 스크롤 휠 클릭 기능 방어
-                if (e.button === 0) startDrag(e.clientY); 
             });
-            
-            window.addEventListener('mousemove', (e) => {
-                if (ptrTracker.isDragging) {
-                    moveDrag(e.clientY, e);
-                }
-            }, { passive: false });
-            
-            window.addEventListener('mouseup', endDrag);
-            window.addEventListener('mouseleave', endDrag); 
         }
     </script>
 </body>
