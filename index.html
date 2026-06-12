@@ -30,7 +30,6 @@
             background-color: var(--bg-color);
             color: var(--text-dark);
             overflow-x: hidden;
-            /* 모바일 브라우저 자체의 기본 pull-to-refresh 기능을 차단하여 커스텀 기능과 충돌 방지 */
             overscroll-behavior-y: contain; 
         }
 
@@ -38,6 +37,9 @@
             padding-bottom: 80px;
             display: flex;
             justify-content: center;
+            /* 기본 드래그 선택만 방지하고 스크롤은 허용 */
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         .app-container {
@@ -49,7 +51,6 @@
             padding: 20px 16px;
         }
 
-        /* 고정형 상단 새로고침 인디케이터 바 */
         .ptr-bar {
             width: 100%;
             height: 0;
@@ -86,7 +87,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* 대시보드 스코어 보드 */
         .summary-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
         .summary-card { border-radius: 16px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
         .summary-card.chaeryn { background-color: var(--chaeryn-light); }
@@ -99,39 +99,44 @@
         .summary-card.yuna .amount { color: #2E6DA4; }
         .total-badge { float: right; font-size: 14px; color: #7F8C8D; font-weight: 500; margin-top: 8px; }
 
-        /* 리스트 뷰 */
         .section-header { display: flex; justify-content: space-between; align-items: center; margin: 12px 0; }
         .section-title { font-size: 18px; font-weight: 700; }
         .record-list { display: flex; flex-direction: column; gap: 10px; }
         .record-item { background: var(--card-bg); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.01); border: 1px solid rgba(0,0,0,0.02); cursor: pointer; }
-        .record-left { display: flex; align-items: center; gap: 12px; }
+        .record-left { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 80%; }
+        .record-row-top { display: flex; align-items: center; gap: 8px; }
         .baby-tag { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
         .baby-tag.chaeryn { background-color: var(--chaeryn-light); color: var(--chaeryn-color); }
         .baby-tag.yuna { background-color: var(--yuna-light); color: var(--yuna-color); }
         .record-amount { font-size: 16px; font-weight: 700; }
+        .record-memo-text { font-size: 13px; color: #7F8C8D; margin-top: 2px; padding-left: 4px; }
         .record-right { display: flex; align-items: center; gap: 8px; color: #95A5A6; font-size: 13px; }
 
-        /* 폼 요소 */
         .form-group { margin-bottom: 20px; }
         .form-label { font-size: 14px; color: #7F8C8D; font-weight: 600; margin-bottom: 8px; display: block; }
+        
         .baby-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .selector-btn { border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; background: #EDF0F2; color: #7F8C8D; cursor: pointer; }
+        .selector-btn { border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; background: #EDF0F2; color: #7F8C8D; cursor: pointer; transition: all 0.2s ease; }
         .selector-btn.chaeryn.active { background-color: var(--chaeryn-color); color: white; }
         .selector-btn.yuna.active { background-color: var(--yuna-color); color: white; }
+        
+        .twin-input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .input-ml-wrapper { position: relative; display: flex; align-items: center; }
+        .input-ml { width: 100%; padding: 14px 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 16px; font-weight: bold; outline: none; transition: all 0.2s ease; user-select: text; -webkit-user-select: text; }
+        .input-ml.chaeryn-field:focus { border-color: var(--chaeryn-color); background-color: var(--chaeryn-light); box-shadow: 0 0 0 3px rgba(255,94,126,0.15); }
+        .input-ml.yuna-field:focus { border-color: var(--yuna-color); background-color: var(--yuna-light); box-shadow: 0 0 0 3px rgba(91,155,213,0.15); }
+        .input-unit { position: absolute; right: 12px; color: #95A5A6; font-size: 13px; font-weight: normal; }
+        
         .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
         .preset-btn { background: #F1F3F5; border: none; padding: 10px 4px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
-        .input-ml-wrapper { position: relative; display: flex; align-items: center; }
-        .input-ml { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; outline: none; }
-        .input-unit { position: absolute; right: 12px; color: #95A5A6; font-size: 14px; }
+        
         .time-wrapper { background: #F1F3F5; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
         .time-input { border: none; background: transparent; font-size: 16px; font-weight: 600; outline: none; }
-        .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
+        .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; user-select: text; -webkit-user-select: text; }
         .save-btn { width: 100%; background: var(--chaeryn-color); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-        /* 그래프 상자 */
         .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 260px; position: relative; }
 
-        /* 하단 탭바 */
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 64px; background: #FFFFFF; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; justify-content: center; align-items: center; color: #95A5A6; font-size: 11px; font-weight: 500; cursor: pointer; background: none; border: none; }
         .nav-item.active { color: var(--chaeryn-color); }
@@ -139,10 +144,9 @@
         .fab { position: fixed; bottom: 84px; right: calc(50% - 220px); width: 56px; height: 56px; background-color: var(--chaeryn-color); border-radius: 50%; display: flex; justify-content: center; align-items: center; color: white; font-size: 30px; box-shadow: 0 4px 10px rgba(255,94,126,0.3); cursor: pointer; border: none; z-index: 10; }
         @media (max-width: 480px) { .fab { right: 20px; } }
 
-        /* 수정/삭제 모달 팝업 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; padding: 16px; }
         .modal.active { display: flex; }
-        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; }
+        .modal-content { background: white; border-radius: 20px; width: 100%; max-width: 400px; padding: 24px; max-height: 90vh; overflow-y: auto; }
         .modal-header { font-size: 18px; font-weight: 700; margin-bottom: 20px; text-align: center; }
         .modal-footer { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .btn-secondary { background: #EDF0F2; color: #7F8C8D; border: none; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; }
@@ -191,24 +195,42 @@
             </header>
 
             <div class="form-group">
-                <label class="form-label">대상 아이 선택</label>
+                <label class="form-label">기본 대상 선택 (텍스트창 클릭으로 변경 가능)</label>
                 <div class="baby-selector">
-                    <button class="selector-btn chaeryn active" onclick="selectBaby('chaeryn')">채린</button>
-                    <button class="selector-btn yuna" onclick="selectBaby('yuna')">유나</button>
+                    <button class="selector-btn chaeryn active" id="btn-select-chaeryn" onclick="selectBaby('chaeryn')">채린</button>
+                    <button class="selector-btn yuna" id="btn-select-yuna" onclick="selectBaby('yuna')">유나</button>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">수유량 입력</label>
-                <div class="preset-grid">
-                    <button class="preset-btn" onclick="setAmount(80)">80</button>
-                    <button class="preset-btn" onclick="setAmount(120)">120</button>
-                    <button class="preset-btn" onclick="setAmount(160)">160</button>
-                    <button class="preset-btn" onclick="setAmount(200)">200</button>
+                <label class="form-label">수유량 입력 (빈칸은 0ml 처리)</label>
+                
+                <div class="twin-input-grid">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린</span>
+                        <div class="input-ml-wrapper">
+                            <input type="number" id="form-amount-chaeryn" class="input-ml chaeryn-field" placeholder="0" onfocus="selectBaby('chaeryn')">
+                            <span class="input-unit">ml</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나</span>
+                        <div class="input-ml-wrapper">
+                            <input type="number" id="form-amount-yuna" class="input-ml yuna-field" placeholder="0" onfocus="selectBaby('yuna')">
+                            <span class="input-unit">ml</span>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-ml-wrapper">
-                    <input type="number" id="form-amount" class="input-ml" placeholder="직접 입력">
-                    <span class="input-unit">ml</span>
+
+                <div class="preset-grid">
+                    <button class="preset-btn" onclick="setFocusedAmount(0)">0</button>
+                    <button class="preset-btn" onclick="setAmountWithOffset(30)">30</button>
+                    <button class="preset-btn" onclick="setAmountWithOffset(60)">60</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(120)">120</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(140)">140</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(160)">160</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(180)">180</button>
+                    <button class="preset-btn" onclick="setFocusedAmount(210)">210</button>
                 </div>
             </div>
 
@@ -270,6 +292,10 @@
                     <label class="form-label" style="color:var(--yuna-color)">유나 수유량 (ml)</label>
                     <input type="number" id="modal-yuna-amount" class="input-ml">
                 </div>
+                <div class="form-group">
+                    <label class="form-label">메모 수정</label>
+                    <textarea id="modal-memo" class="textarea-memo" placeholder="메모 내용 수정"></textarea>
+                </div>
                 <div class="modal-footer">
                     <button class="btn-danger" onclick="executeDelete()">삭제</button>
                     <button class="save-btn" style="margin-top:0;" onclick="executeModify()">수정 완료</button>
@@ -282,20 +308,27 @@
 
     <script>
         let records = JSON.parse(localStorage.getItem('twin_records_v3')) || [];
-        let currentBaby = 'chaeryn';
         let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbwWHhE3YseFnateITy0CwUiLVwAeQk9YwgRaT9ypRoqEEbLMjR8VsKJ_QO-Euk8WeC0XQ/exec';
         let selectedRecordId = null;
         let myChart = null;
         let currentTab = 'home';
+        
+        let focusedField = 'chaeryn'; 
 
-        // 당겨서 새로고침 간소화 제어 변수
-        let touchStartY = 0;
+        let ptrTracker = {
+            startY: 0,
+            isDragging: false,
+            activeTriggered: false
+        };
         let isSyncing = false;
 
         document.addEventListener('DOMContentLoaded', () => {
             setTodayDateTitle();
+            records = sortRecordsNewestFirst(records);
+            localStorage.setItem('twin_records_v3', JSON.stringify(records));
+            
             updateDashboard();
-            initSimplifiedPullToRefresh(); // 새 동기화 엔진 구동
+            initUnifiedPullToRefresh();
             if(sheetApiUrl) {
                 document.getElementById('sheet-api-url').value = sheetApiUrl;
                 pullFromGoogleSheet();
@@ -341,34 +374,76 @@
 
         function openRecordForm() {
             switchTab('form');
-            document.getElementById('form-amount').value = '';
+            document.getElementById('form-amount-chaeryn').value = '';
+            document.getElementById('form-amount-yuna').value = '';
             document.getElementById('form-memo').value = '';
             const now = new Date();
             document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            selectBaby('chaeryn');
+            setTimeout(() => document.getElementById('form-amount-chaeryn').focus(), 150);
         }
 
         function selectBaby(baby) {
-            currentBaby = baby;
+            focusedField = baby;
             document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.selector-btn.${baby}`).classList.add('active');
+            
+            if(baby === 'chaeryn') {
+                document.getElementById('btn-select-chaeryn').classList.add('active');
+            } else {
+                document.getElementById('btn-select-yuna').classList.add('active');
+            }
         }
 
-        function setAmount(val) { document.getElementById('form-amount').value = val; }
+        function setFocusedAmount(val) {
+            if (focusedField === 'chaeryn') {
+                document.getElementById('form-amount-chaeryn').value = val;
+            } else {
+                document.getElementById('form-amount-yuna').value = val;
+            }
+        }
+
+        function setAmountWithOffset(offset) {
+            const id = focusedField === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna';
+            const currentVal = parseInt(document.getElementById(id).value, 10) || 0;
+            document.getElementById(id).value = currentVal + offset;
+        }
+
+        function sortRecordsNewestFirst(arr) {
+            if(!Array.isArray(arr)) return [];
+            return arr.sort((a, b) => {
+                const dateA = formatDateString(a.date);
+                const dateB = formatDateString(b.date);
+                if (dateB !== dateA) return dateB.localeCompare(dateA); 
+                
+                const timeA = String(a.time || '00:00');
+                const timeB = String(b.time || '00:00');
+                return timeB.localeCompare(timeA); 
+            });
+        }
 
         function saveRecord() {
-            const amt = document.getElementById('form-amount').value;
-            if(!amt || amt <= 0) return alert('용량을 입력하세요.');
+            const chAmt = document.getElementById('form-amount-chaeryn').value;
+            const ynAmt = document.getElementById('form-amount-yuna').value;
+            
+            const chaerynVal = chAmt === '' ? 0 : parseInt(chAmt, 10);
+            const yunaVal = ynAmt === '' ? 0 : parseInt(ynAmt, 10);
+            
+            if(chaerynVal < 0 || yunaVal < 0) return alert('유효한 용량을 입력하세요.');
+            if(chaerynVal === 0 && yunaVal === 0) return alert('최소 한 명의 수유량은 입력해야 합니다.');
             
             const newRec = {
                 id: String(Date.now()),
                 date: getTodayDateString(),
                 time: document.getElementById('form-time').value,
-                chaeryn: currentBaby === 'chaeryn' ? parseInt(amt) : 0,
-                yuna: currentBaby === 'yuna' ? parseInt(amt) : 0,
+                chaeryn: chaerynVal,
+                yuna: yunaVal,
                 memo: document.getElementById('form-memo').value
             };
 
-            records.push(newRec);
+            records.unshift(newRec);
+            records = sortRecordsNewestFirst(records);
+            
             localStorage.setItem('twin_records_v3', JSON.stringify(records));
             if(sheetApiUrl) syncToGoogleSheet(newRec, 'INSERT');
             
@@ -378,7 +453,8 @@
 
         function updateDashboard() {
             const todayStr = getTodayDateString();
-            const todayRecs = records.filter(r => formatDateString(r.date) === todayStr).sort((a,b) => b.time.localeCompare(a.time));
+            records = sortRecordsNewestFirst(records);
+            let todayRecs = records.filter(r => formatDateString(r.date) === todayStr);
             
             let chTotal = 0, ynTotal = 0;
             const listWrapper = document.getElementById('today-records-list');
@@ -404,15 +480,23 @@
                 } else if (hasChaeryn) {
                     displayTag = `<span class="baby-tag chaeryn">채린</span>`;
                     displayAmount = `${r.chaeryn} ml`;
-                } else {
+                } else if (hasYuna) {
                     displayTag = `<span class="baby-tag yuna">유나</span>`;
                     displayAmount = `${r.yuna} ml`;
+                } else {
+                    displayTag = `<span class="baby-tag" style="background:#E2E8F0; color:#4A5568;">공통</span>`;
+                    displayAmount = `0 ml`;
                 }
+                
+                let memoHtml = r.memo ? `<div class="record-memo-text">📝 ${r.memo}</div>` : '';
                 
                 item.innerHTML = `
                     <div class="record-left">
-                        ${displayTag}
-                        <span class="record-amount" style="margin-left:8px;">${displayAmount}</span>
+                        <div class="record-row-top">
+                            ${displayTag}
+                            <span class="record-amount" style="margin-left:4px;">${displayAmount}</span>
+                        </div>
+                        ${memoHtml}
                     </div>
                     <div class="record-right"><span>${r.time}</span><span style="color:#ccc;">➔</span></div>
                 `;
@@ -431,6 +515,7 @@
             document.getElementById('modal-date-title').innerText = `${target.time} 기록 편집`;
             document.getElementById('modal-chaeryn-amount').value = target.chaeryn;
             document.getElementById('modal-yuna-amount').value = target.yuna;
+            document.getElementById('modal-memo').value = target.memo || '';
             document.getElementById('edit-modal').classList.add('active');
         }
 
@@ -439,9 +524,15 @@
         function executeModify() {
             const idx = records.findIndex(r => r.id === String(selectedRecordId));
             if(idx > -1) {
-                records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value) || 0;
-                records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value) || 0;
+                const chInput = document.getElementById('modal-chaeryn-amount').value;
+                const ynInput = document.getElementById('modal-yuna-amount').value;
+                const memoInput = document.getElementById('modal-memo').value;
                 
+                records[idx].chaeryn = chInput === '' ? 0 : parseInt(chInput, 10) || 0;
+                records[idx].yuna = ynInput === '' ? 0 : parseInt(ynInput, 10) || 0;
+                records[idx].memo = memoInput;
+                
+                records = sortRecordsNewestFirst(records);
                 localStorage.setItem('twin_records_v3', JSON.stringify(records));
                 if(sheetApiUrl) syncToGoogleSheet(records[idx], 'UPDATE');
                 
@@ -468,6 +559,8 @@
             const statsList = document.getElementById('stats-days-all-list');
             statsList.innerHTML = '';
             
+            records = sortRecordsNewestFirst(records);
+
             let dayMap = {};
             records.forEach(r => {
                 const normalizedDate = formatDateString(r.date);
@@ -477,25 +570,32 @@
                 dayMap[normalizedDate].details.push(r);
             });
 
-            const sortedDates = Object.keys(dayMap).sort().slice(-7);
+            const sortedDates = Object.keys(dayMap).sort((a,b) => b.localeCompare(a)).slice(0, 7);
             let chartLabels = [], chData = [], ynData = [];
 
-            sortedDates.forEach(d => {
+            const chartDates = [...sortedDates].reverse();
+            chartDates.forEach(d => {
                 chartLabels.push(d.substring(5));
                 chData.push(dayMap[d].chaeryn);
                 ynData.push(dayMap[d].yuna);
+            });
 
-                dayMap[d].details.sort((a,b) => b.time.localeCompare(a.time)).forEach(dr => {
+            sortedDates.forEach(d => {
+                dayMap[d].details.forEach(dr => {
                     const dItem = document.createElement('div');
                     dItem.className = 'record-item';
                     dItem.onclick = () => openEditModal(dr.id);
+                    
+                    let memoHtml = dr.memo ? `<div style="color:#7F8C8D; font-size:12px; margin-top:4px;">📝 ${dr.memo}</div>` : '';
+                    
                     dItem.innerHTML = `
-                        <div style="display:flex; flex-direction:column; gap:2px;">
+                        <div style="display:flex; flex-direction:column; gap:2px; width:80%;">
                             <span style="font-weight:bold; font-size:13px;">📅 ${formatDateString(dr.date)} <span style="color:#95A5A6;font-weight:normal;">[${dr.time}]</span></span>
                             <div style="display:flex; gap:10px; font-size:12px; margin-top:2px;">
                                 <span style="color:var(--chaeryn-color)">채린: ${dr.chaeryn}ml</span>
                                 <span style="color:var(--yuna-color)">유나: ${dr.yuna}ml</span>
                             </div>
+                            ${memoHtml}
                         </div>
                         <span style="color:#ccc; font-size:12px;">➔</span>
                     `;
@@ -553,8 +653,8 @@
                     id: String(record.id),
                     date: formatDateString(record.date),
                     time: record.time,
-                    chaeryn: parseInt(record.chaeryn) || 0, 
-                    yuna: parseInt(record.yuna) || 0,       
+                    chaeryn: parseInt(record.chaeryn, 10) || 0, 
+                    yuna: parseInt(record.yuna, 10) || 0,       
                     memo: record.memo || ''
                 })
             });
@@ -571,11 +671,12 @@
 
             window.handleSheetData = function(data) {
                 if (Array.isArray(data)) {
-                    records = data;
+                    records = sortRecordsNewestFirst(data);
                     localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                    
                     if (currentTab === 'home') updateDashboard();
                     else if (currentTab === 'stats') updateStats();
-                    console.log('원격 데이터 동기화 완료!');
+                    console.log('원격 서버 동기화 및 최신순 정렬 완료!');
                 }
                 if(onComplete) onComplete();
             };
@@ -593,42 +694,54 @@
             document.body.appendChild(script);
         }
 
-        // [완전 재구현] 표준 브라우저 스크롤 연동 방식의 당겨서 새로고침
-        function initSimplifiedPullToRefresh() {
+        function initUnifiedPullToRefresh() {
             const bar = document.getElementById('ptr-bar');
             const spinner = document.getElementById('ptr-spinner');
             const text = document.getElementById('ptr-text');
 
-            window.addEventListener('touchstart', (e) => {
-                if (window.scrollY === 0 && !isSyncing) {
-                    touchStartY = e.touches[0].clientY;
+            function startDrag(clientY) {
+                if (window.scrollY === 0 && !isSyncing && (currentTab === 'home' || currentTab === 'stats')) {
+                    ptrTracker.startY = clientY;
+                    ptrTracker.isDragging = true;
+                    ptrTracker.activeTriggered = false;
                 }
-            }, { passive: true });
+            }
 
-            window.addEventListener('touchmove', (e) => {
-                if (touchStartY === 0 || isSyncing || window.scrollY > 0) return;
+            function moveDrag(clientY, event) {
+                if (!ptrTracker.isDragging || isSyncing || window.scrollY > 0) return;
                 
-                const currentY = e.touches[0].clientY;
-                const diff = currentY - touchStartY;
+                const diff = clientY - ptrTracker.startY;
 
-                // 스크롤이 맨 위인 상태에서 아래로 80px 이상 끌어내렸을 때 조건 활성화
-                if (diff > 80 && (currentTab === 'home' || currentTab === 'stats')) {
-                    bar.classList.add('active');
-                    text.innerText = '놓으면 동기화 시작';
+                // 아래 방향으로 실제 드래그 동작이 일어날 때만 브라우저 이벤트를 인터셉트함
+                if (diff > 0) {
+                    if (event && typeof event.cancelable === 'boolean' && event.cancelable) {
+                        event.preventDefault(); 
+                    }
+                    
+                    if (diff > 80) {
+                        bar.classList.add('active');
+                        text.innerText = '놓으면 동기화 시작';
+                        ptrTracker.activeTriggered = true;
+                    } else {
+                        bar.style.height = Math.min(diff, 44) + 'px';
+                        bar.style.marginBottom = '12px';
+                    }
                 }
-            }, { passive: true });
+            }
 
-            window.addEventListener('touchend', () => {
-                touchStartY = 0;
-                
-                // '놓으면 동기화 시작' 상태에서 손을 뗐을 때 작동
-                if (bar.classList.contains('active') && !isSyncing) {
+            function endDrag() {
+                if (!ptrTracker.isDragging) return;
+                ptrTracker.isDragging = false;
+                bar.style.height = ''; 
+                bar.style.marginBottom = '';
+
+                if (ptrTracker.activeTriggered && !isSyncing) {
                     isSyncing = true;
+                    bar.classList.add('active');
                     spinner.style.display = 'inline-block';
                     text.innerText = '구글 시트 데이터 가져오는 중...';
 
                     pullFromGoogleSheet(() => {
-                        // 완료 후 안전하게 롤백 초기화
                         setTimeout(() => {
                             bar.classList.remove('active');
                             spinner.style.display = 'none';
@@ -636,10 +749,31 @@
                             isSyncing = false;
                         }, 600);
                     });
-                } else if (!isSyncing) {
+                } else {
                     bar.classList.remove('active');
                 }
+            }
+
+            // 모바일 터치 이벤트
+            window.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
+            window.addEventListener('touchmove', (e) => moveDrag(e.touches[0].clientY, e), { passive: false });
+            window.addEventListener('touchend', endDrag, { passive: true });
+
+            // PC 마우스 드래그 이벤트 (마우스 휠 스크롤과 충돌 차단 처리 완료)
+            window.addEventListener('mousedown', (e) => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'BUTTON') return;
+                // 왼쪽 마우스 클릭(0)일 때만 작동하도록 제한하여 스크롤 휠 클릭 기능 방어
+                if (e.button === 0) startDrag(e.clientY); 
             });
+            
+            window.addEventListener('mousemove', (e) => {
+                if (ptrTracker.isDragging) {
+                    moveDrag(e.clientY, e);
+                }
+            }, { passive: false });
+            
+            window.addEventListener('mouseup', endDrag);
+            window.addEventListener('mouseleave', endDrag); 
         }
     </script>
 </body>
