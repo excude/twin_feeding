@@ -723,13 +723,7 @@
                 if (bar.classList.contains('active') && !isSyncing) {
                     isSyncing = true;
                     spinner.style.display = 'inline-block';
-                    text.innerText = '기존 데이터 초기화 및 서버 연동 중...';
-
-                    records = [];
-                    localStorage.removeItem('twin_records_v3');
-                    if (currentTab === 'home') updateDashboard();
-                    else if (currentTab === 'stats') updateStats();
-
+                    text.innerText = '구글 시트 데이터 가져오는 중...';
                     pullFromGoogleSheet(() => {
                         setTimeout(() => {
                             bar.classList.remove('active');
