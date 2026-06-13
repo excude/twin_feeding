@@ -305,7 +305,7 @@
 
     <script>
         let records = JSON.parse(localStorage.getItem('twin_records_v3')) || [];
-        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycby6czxkHWDtzoHz04DftI-4w_34kSu12SRjASgCdgIK-o68tXXc2C4yf230Eqnbd2GshA/exec';
+        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbzm4U59Q3TAmVCRWKDGuplKYtvmZdeO9Y_9Jv4EJAhMEaMuXlNcLIjKdRKGKpBn9d8KoQ/exec';
         let selectedRecordId = null;
         let myChart = null;
         let currentTab = 'home';
@@ -660,39 +660,43 @@
             });
         }
 
-        function pullFromGoogleSheet(onComplete) {
-            if (!sheetApiUrl) {
-                if(onComplete) onComplete();
-                return;
-            }
-            
-            const oldScript = document.getElementById('jsonp-sync-script');
-            if (oldScript) oldScript.remove();
+		function pullFromGoogleSheet(onComplete) {
+			if (!sheetApiUrl) {
+				if(onComplete) onComplete();
+				return;
+			}
+			
+			// 카카오톡 웹뷰 캐싱방지 및 리다이렉트 추적 강제화 설정
+			const cacheBuster = `_ts=${Date.now()}`;
+			const separator = sheetApiUrl.includes('?') ? '&' : '?';
+			const finalUrl = `${sheetApiUrl}${separator}${cacheBuster}`;
 
-            window.handleSheetData = function(data) {
-                if (Array.isArray(data)) {
-                    records = sortRecordsNewestFirst(data);
-                    localStorage.setItem('twin_records_v3', JSON.stringify(records));
-                    
-                    if (currentTab === 'home') updateDashboard();
-                    else if (currentTab === 'stats') updateStats();
-                    console.log('원격 서버 동기화 및 최신순 정렬 완료!');
-                }
-                if(onComplete) onComplete();
-            };
-
-            const script = document.createElement('script');
-            script.id = 'jsonp-sync-script';
-            const separator = sheetApiUrl.includes('?') ? '&' : '?';
-            script.src = `${sheetApiUrl}${separator}callback=handleSheetData`;
-            
-            script.onerror = function() {
-                console.log('구글 데이터 호출 실패');
-                if(onComplete) onComplete();
-            };
-            
-            document.body.appendChild(script);
-        }
+			// 표준 Fetch API + CORS Mode 가동
+			fetch(finalUrl, {
+				method: 'GET',
+				mode: 'cors', // CORS 통신 명시
+				redirect: 'follow' // 구글 매크로서버의 302 리다이렉트를 브라우저가 자동 추적하도록 설정
+			})
+			.then(response => {
+				if (!response.ok) throw new Error('네트워크 응답 불량');
+				return response.json(); // 응답을 순수 JSON으로 파싱
+			})
+			.then(data => {
+				if (Array.isArray(data)) {
+					records = data;
+					localStorage.setItem('twin_records_v3', JSON.stringify(records));
+					if (currentTab === 'home') updateDashboard();
+					else if (currentTab === 'stats') updateStats();
+					console.log('원격 데이터 동기화 성공 (CORS Fetch)!');
+				}
+				if(onComplete) onComplete();
+			})
+			.catch(error => {
+				console.error('구글 데이터 호출 실패 (CORS 에러 혹은 주소 오류):', error);
+				// 카카오톡 내에서 에러 추적을 쉽게 하기 위해 UI 디버깅 메시지 출력 가능
+				if(onComplete) onComplete();
+			});
+		}
 
         function initSimplifiedPullToRefresh() {
             const bar = document.getElementById('ptr-bar');
