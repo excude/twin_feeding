@@ -18,65 +18,15 @@
             --border-color: #EAEAEA;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        html, body { background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overscroll-behavior-y: contain; }
+        body { padding-bottom: 80px; display: flex; justify-content: center; }
 
-        html, body {
-            background-color: var(--bg-color);
-            color: var(--text-dark);
-            overflow-x: hidden;
-            overscroll-behavior-y: contain; 
-        }
-
-        body {
-            padding-bottom: 80px;
-            display: flex;
-            justify-content: center;
-        }
-
-        .app-container {
-            width: 100%;
-            max-width: 480px;
-            min-height: 100vh;
-            background: var(--bg-color);
-            position: relative;
-            padding: 20px 16px;
-        }
-
-        .ptr-bar {
-            width: 100%;
-            height: 0;
-            overflow: hidden;
-            background: #F1F3F5;
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 13px;
-            color: #7F8C8D;
-            font-weight: 600;
-            margin-bottom: 0;
-            transition: height 0.2s ease, margin-bottom 0.2s ease;
-        }
-        .ptr-bar.active {
-            height: 44px;
-            margin-bottom: 16px;
-        }
-        .ptr-spinner {
-            width: 14px;
-            height: 14px;
-            border: 2px solid #ccc;
-            border-top: 2px solid var(--chaeryn-color);
-            border-radius: 50%;
-            margin-right: 8px;
-            animation: spin 0.8s linear infinite;
-            display: none;
-        }
+        .app-container { width: 100%; max-width: 480px; min-height: 100vh; background: var(--bg-color); position: relative; padding: 20px 16px; }
+        
+        .ptr-bar { width: 100%; height: 0; overflow: hidden; background: #F1F3F5; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 13px; color: #7F8C8D; font-weight: 600; margin-bottom: 0; transition: height 0.2s ease, margin-bottom 0.2s ease; }
+        .ptr-bar.active { height: 44px; margin-bottom: 16px; }
+        .ptr-spinner { width: 14px; height: 14px; border: 2px solid #ccc; border-top: 2px solid var(--chaeryn-color); border-radius: 50%; margin-right: 8px; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         header { margin-bottom: 20px; }
@@ -91,7 +41,8 @@
         .summary-card .name { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
         .summary-card.chaeryn .name { color: var(--chaeryn-color); }
         .summary-card.yuna .name { color: var(--yuna-color); }
-        .summary-card .amount { font-size: 26px; font-weight: 700; }
+        .summary-card .amount { font-size: 26px; font-weight: 700; display:flex; flex-direction:column;}
+        .summary-card .calcium-badge { font-size: 13px; font-weight: 600; color: #7F8C8D; margin-top: 4px; }
         .summary-card.chaeryn .amount { color: #D63351; }
         .summary-card.yuna .amount { color: #2E6DA4; }
         .total-badge { float: right; font-size: 14px; color: #7F8C8D; font-weight: 500; margin-top: 8px; }
@@ -100,14 +51,14 @@
         .section-title { font-size: 18px; font-weight: 700; }
         .record-list { display: flex; flex-direction: column; gap: 10px; }
         .record-item { background: var(--card-bg); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(0,0,0,0.01); border: 1px solid rgba(0,0,0,0.02); cursor: pointer; }
-        .record-left { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 80%; }
-        .record-row-top { display: flex; align-items: center; gap: 8px; }
-        .baby-tag { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; }
+        .record-left { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; width: 85%; }
+        
+        .baby-tag { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 600; white-space: nowrap; }
         .baby-tag.chaeryn { background-color: var(--chaeryn-light); color: var(--chaeryn-color); }
         .baby-tag.yuna { background-color: var(--yuna-light); color: var(--yuna-color); }
-        .record-amount { font-size: 16px; font-weight: 700; }
-        .record-memo-text { font-size: 13px; color: #7F8C8D; margin-top: 2px; padding-left: 4px; }
-        .record-right { display: flex; align-items: center; gap: 8px; color: #95A5A6; font-size: 13px; }
+        .record-amount { font-size: 15px; font-weight: 700; }
+        .record-memo-text { font-size: 13px; color: #7F8C8D; margin-top: 6px; padding-left: 4px; }
+        .record-right { display: flex; align-items: center; gap: 8px; color: #95A5A6; font-size: 13px; min-width: 50px; justify-content: flex-end; }
 
         .form-group { margin-bottom: 20px; }
         .form-label { font-size: 14px; color: #7F8C8D; font-weight: 600; margin-bottom: 8px; display: block; }
@@ -126,6 +77,17 @@
         
         .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
         .preset-btn { background: #F1F3F5; border: none; padding: 10px 4px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+        
+        /* 칼슘 프리셋 UI 개선 */
+        .calcium-row { display: grid; grid-template-columns: 85px 1fr; gap: 8px; align-items: center; margin-bottom: 12px; }
+        .calcium-title-col { display: flex; flex-direction: column; gap: 2px; }
+        .preset-calcium-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+        .preset-btn.calcium-toggle { transition: background-color 0.2s, color 0.2s; }
+        .preset-btn.calcium-toggle.active-chaeryn { background-color: var(--chaeryn-color); color: white; }
+        .preset-btn.calcium-toggle.active-yuna { background-color: var(--yuna-color); color: white; }
+        .preset-input { border: 1px solid #D5D8DC; border-radius: 8px; font-size: 13px; text-align: center; width: 100%; padding: 0; outline: none; background: #fff; font-family: inherit;}
+        .preset-input::placeholder { color: #95A5A6; font-size: 12px;}
+        .preset-input:focus { border-color: #7F8C8D; }
         
         .time-wrapper { background: #F1F3F5; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
         .time-input { border: none; background: transparent; font-size: 16px; font-weight: 600; outline: none; }
@@ -161,18 +123,24 @@
             </div>
 
             <header>
-                <div class="total-badge">오늘 총 <span id="home-total-all">0</span>ml</div>
-                <div class="date-title" id="current-date-str">수유 일지</div>
+                <div class="total-badge">수유 총 <span id="home-total-all">0</span>ml</div>
+                <div class="date-title" id="current-date-str">수유 및 칼슘 일지</div>
             </header>
 
             <div class="summary-container">
                 <div class="summary-card chaeryn">
                     <div class="name">채린 합계</div>
-                    <div class="amount"><span id="home-chaeryn-total">0</span>ml</div>
+                    <div class="amount">
+                        <span id="home-chaeryn-total">0ml</span>
+                        <span class="calcium-badge">🧀 칼슘: <span id="home-chaeryn-calcium">0</span>mg</span>
+                    </div>
                 </div>
                 <div class="summary-card yuna">
                     <div class="name">유나 합계</div>
-                    <div class="amount"><span id="home-yuna-total">0</span>ml</div>
+                    <div class="amount">
+                        <span id="home-yuna-total">0ml</span>
+                        <span class="calcium-badge">🧀 칼슘: <span id="home-yuna-calcium">0</span>mg</span>
+                    </div>
                 </div>
             </div>
 
@@ -187,38 +155,36 @@
         <div id="tab-form" class="tab-content">
             <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                 <span style="color:#7F8C8D; cursor:pointer;" onclick="switchTab('home')">취소</span>
-                <span style="font-size: 18px; font-weight:700;">새 수유 기록</span>
-                <span style="color:var(--chaeryn-color); font-weight:700; cursor:pointer;" onclick="saveRecord()">확인</span>
+                <span style="font-size: 18px; font-weight:700;">새 기록 추가</span>
+                <span style="color:var(--chaeryn-color); font-weight:700; cursor:pointer;" onclick="saveRecord()">저장</span>
             </header>
 
             <div class="form-group">
                 <label class="form-label">기본 대상 선택 (텍스트창 클릭으로 변경 가능)</label>
                 <div class="baby-selector">
-                    <button class="selector-btn chaeryn active" id="btn-select-chaeryn" onclick="selectBaby('chaeryn')">채린</button>
-                    <button class="selector-btn yuna" id="btn-select-yuna" onclick="selectBaby('yuna')">유나</button>
+                    <button class="selector-btn chaeryn active" id="btn-select-chaeryn" onclick="setFocusBaby('chaeryn')">채린</button>
+                    <button class="selector-btn yuna" id="btn-select-yuna" onclick="setFocusBaby('yuna')">유나</button>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label">수유량 입력 (빈칸은 0ml 처리)</label>
-                
+                <label class="form-label">수유량 입력 (ml, 빈칸은 0처리)</label>
                 <div class="twin-input-grid">
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린</span>
+                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린 수유</span>
                         <div class="input-ml-wrapper">
-                            <input type="number" id="form-amount-chaeryn" class="input-ml chaeryn-field" placeholder="0" onfocus="selectBaby('chaeryn')">
+                            <input type="number" id="form-amount-chaeryn" class="input-ml chaeryn-field" placeholder="0" onfocus="setFocusField('chaeryn', 'milk')">
                             <span class="input-unit">ml</span>
                         </div>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나</span>
+                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나 수유</span>
                         <div class="input-ml-wrapper">
-                            <input type="number" id="form-amount-yuna" class="input-ml yuna-field" placeholder="0" onfocus="selectBaby('yuna')">
+                            <input type="number" id="form-amount-yuna" class="input-ml yuna-field" placeholder="0" onfocus="setFocusField('yuna', 'milk')">
                             <span class="input-unit">ml</span>
                         </div>
                     </div>
                 </div>
-
                 <div class="preset-grid">
                     <button class="preset-btn" onclick="setFocusedAmount(0)">0</button>
                     <button class="preset-btn" onclick="setAmountWithOffset(10)">+10</button>
@@ -228,6 +194,66 @@
                     <button class="preset-btn" onclick="setFocusedAmount(150)">150</button>
                     <button class="preset-btn" onclick="setFocusedAmount(180)">180</button>
                     <button class="preset-btn" onclick="setFocusedAmount(210)">210</button>
+                </div>
+            </div>
+
+            <hr style="border:0; border-top:1px dashed var(--border-color); margin: 24px 0;">
+
+            <div class="form-group">
+                <label class="form-label">칼슘 섭취량 입력 (mg, 직접 입력 가능)</label>
+                <div class="twin-input-grid">
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린 칼슘</span>
+                        <div class="input-ml-wrapper">
+                            <input type="number" id="form-calcium-chaeryn" class="input-ml chaeryn-field" placeholder="0" onfocus="setFocusField('chaeryn', 'calcium')">
+                            <span class="input-unit">mg</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px;">
+                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나 칼슘</span>
+                        <div class="input-ml-wrapper">
+                            <input type="number" id="form-calcium-yuna" class="input-ml yuna-field" placeholder="0" onfocus="setFocusField('yuna', 'calcium')">
+                            <span class="input-unit">mg</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
+                    <div style="font-size: 12px; color: #7F8C8D; margin-bottom: 10px; text-align: center;">아래 버튼 클릭 시, 선택된 아이 칸에 합산/차감 됩니다.</div>
+                    
+                    <div class="calcium-row">
+                        <div class="calcium-title-col">
+                            <span style="font-size: 13px; font-weight: bold; color: #E67E22; white-space: nowrap;">🧀 치즈</span>
+                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1장: 140mg)</span>
+                        </div>
+                        <div class="preset-calcium-grid">
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 70)">0.5장</button>
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 140)">1장</button>
+                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                        </div>
+                    </div>
+                    <div class="calcium-row">
+                        <div class="calcium-title-col">
+                            <span style="font-size: 13px; font-weight: bold; color: #2980B9; white-space: nowrap;">🥛 우유</span>
+                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1잔: 200mg)</span>
+                        </div>
+                        <div class="preset-calcium-grid">
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 100)">0.5잔</button>
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 200)">1잔</button>
+                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                        </div>
+                    </div>
+                    <div class="calcium-row">
+                        <div class="calcium-title-col">
+                            <span style="font-size: 13px; font-weight: bold; color: #8E44AD; white-space: nowrap;">🍦 요거트</span>
+                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1컵: 85mg)</span>
+                        </div>
+                        <div class="preset-calcium-grid">
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 42.5)">0.5컵</button>
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 85)">1컵</button>
+                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -280,15 +306,23 @@
 
         <div class="modal" id="edit-modal">
             <div class="modal-content">
-                <div class="modal-header" id="modal-date-title">수유 내역 편집</div>
+                <div class="modal-header" id="modal-date-title">기록 편집</div>
+                
                 <div class="form-group">
-                    <label class="form-label" style="color:var(--chaeryn-color)">채린 수유량 (ml)</label>
-                    <input type="number" id="modal-chaeryn-amount" class="input-ml">
+                    <label class="form-label" style="color:var(--chaeryn-color)">채린 수유(ml) / 칼슘(mg)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" id="modal-chaeryn-amount" class="input-ml" placeholder="수유량">
+                        <input type="number" id="modal-chaeryn-calcium" class="input-ml" placeholder="칼슘량">
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label class="form-label" style="color:var(--yuna-color)">유나 수유량 (ml)</label>
-                    <input type="number" id="modal-yuna-amount" class="input-ml">
+                    <label class="form-label" style="color:var(--yuna-color)">유나 수유(ml) / 칼슘(mg)</label>
+                    <div style="display:flex; gap:8px;">
+                        <input type="number" id="modal-yuna-amount" class="input-ml" placeholder="수유량">
+                        <input type="number" id="modal-yuna-calcium" class="input-ml" placeholder="칼슘량">
+                    </div>
                 </div>
+
                 <div class="form-group">
                     <label class="form-label">메모 수정</label>
                     <textarea id="modal-memo" class="textarea-memo" placeholder="메모 내용 수정"></textarea>
@@ -304,13 +338,14 @@
     </div>
 
     <script>
-        let records = JSON.parse(localStorage.getItem('twin_records_v3')) || [];
-        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbzm4U59Q3TAmVCRWKDGuplKYtvmZdeO9Y_9Jv4EJAhMEaMuXlNcLIjKdRKGKpBn9d8KoQ/exec';
+        let records = JSON.parse(localStorage.getItem('twin_records_v4')) || [];
+        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbw32hCoTJ5S3IU-gGHN4QF7s16h1h-ob4FFpD-oDxnvPaJfzNn8RO4S5fSiAxw3fiwRLw/exec';
         let selectedRecordId = null;
         let myChart = null;
         let currentTab = 'home';
         
-        let focusedField = 'chaeryn'; 
+        let focusedBaby = 'chaeryn'; 
+        let focusedType = 'milk'; 
 
         let touchStartY = 0;
         let isSyncing = false;
@@ -318,7 +353,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             setTodayDateTitle();
             records = sortRecordsNewestFirst(records);
-            localStorage.setItem('twin_records_v3', JSON.stringify(records));
+            localStorage.setItem('twin_records_v4', JSON.stringify(records));
             
             updateDashboard();
             initSimplifiedPullToRefresh();
@@ -369,16 +404,31 @@
             switchTab('form');
             document.getElementById('form-amount-chaeryn').value = '';
             document.getElementById('form-amount-yuna').value = '';
+            document.getElementById('form-calcium-chaeryn').value = '';
+            document.getElementById('form-calcium-yuna').value = '';
             document.getElementById('form-memo').value = '';
+            
+            // 직접입력 칸 초기화
+            document.querySelectorAll('.preset-input').forEach(input => input.value = '');
+            
             const now = new Date();
             document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             
-            selectBaby('chaeryn');
-            setTimeout(() => document.getElementById('form-amount-chaeryn').focus(), 150);
+            clearCalciumToggles();
+            setFocusBaby('chaeryn'); 
         }
 
-        function selectBaby(baby) {
-            focusedField = baby;
+        function clearCalciumToggles() {
+            document.querySelectorAll('.preset-btn.calcium-toggle').forEach(btn => {
+                btn.classList.remove('active-chaeryn', 'active-yuna');
+            });
+        }
+
+        function setFocusBaby(baby) {
+            if (focusedBaby !== baby) {
+                clearCalciumToggles(); // 아이가 바뀌면 버튼 토글 색상 초기화
+            }
+            focusedBaby = baby;
             document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
             
             if(baby === 'chaeryn') {
@@ -388,21 +438,60 @@
             }
         }
 
-        function setFocusedAmount(val) {
-            if (focusedField === 'chaeryn') {
-                document.getElementById('form-amount-chaeryn').value = val;
-            } else {
-                document.getElementById('form-amount-yuna').value = val;
-            }
+        function setFocusField(baby, type) {
+            setFocusBaby(baby);
+            focusedType = type;
         }
 
-        // [수정] 증감값 처리 시 음수가 되지 않도록 보호 로직 추가
-        function setAmountWithOffset(offset) {
-            const id = focusedField === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna';
-            const currentVal = parseInt(document.getElementById(id).value, 10) || 0;
-            let finalVal = currentVal + offset;
-            if (finalVal < 0) finalVal = 0; // 마이너스 방지
-            document.getElementById(id).value = finalVal;
+		// 1. 수유량 버튼 클릭 시 호출되는 함수 수정
+		function setFocusedAmount(val) {
+			// 🍼 수유량 입력창 타겟 설정
+			const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
+			document.getElementById(id).value = val;
+		}
+
+		// 2. 수유량 +10/-10 버튼 클릭 시 호출되는 함수 수정
+		function setAmountWithOffset(offset) {
+			// 🍼 수유량 입력창 타겟 설정
+			const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
+			
+			const inputEl = document.getElementById(id);
+			const currentVal = parseFloat(inputEl.value) || 0;
+			let finalVal = currentVal + offset;
+			if (finalVal < 0) finalVal = 0; 
+			inputEl.value = finalVal;
+		}
+
+		// 3. 칼슘 버튼 클릭 시 (기존 로직 유지하되 타겟 명확화)
+		function toggleCalcium(btn, amount) {
+			// 🧀 칼슘 입력창 타겟 설정
+			const inputId = focusedBaby === 'chaeryn' ? 'form-calcium-chaeryn' : 'form-calcium-yuna';
+			const inputEl = document.getElementById(inputId);
+			let currentVal = parseFloat(inputEl.value) || 0;
+			
+			// 버튼 색상 클래스 적용 (기존 코드의 active-chaeryn/yuna 클래스 활용)
+			const activeClass = focusedBaby === 'chaeryn' ? 'active-chaeryn' : 'active-yuna';
+
+			if (btn.classList.contains(activeClass)) {
+				btn.classList.remove(activeClass);
+				currentVal -= amount;
+			} else {
+				btn.classList.add(activeClass);
+				currentVal += amount;
+			}
+			
+			if (currentVal < 0) currentVal = 0;
+			inputEl.value = currentVal;
+		}
+        function addManualCalcium(inputEl) {
+            const val = parseFloat(inputEl.value);
+            if (val && val > 0) {
+                const id = focusedBaby === 'chaeryn' ? 'form-calcium-chaeryn' : 'form-calcium-yuna';
+                const mainInput = document.getElementById(id);
+                let currentVal = parseFloat(mainInput.value) || 0;
+                mainInput.value = currentVal + val;
+            }
+            inputEl.value = ''; // 값 더하고 나면 입력창 비우기
         }
 
         function sortRecordsNewestFirst(arr) {
@@ -424,12 +513,16 @@
         function saveRecord() {
             const chAmt = document.getElementById('form-amount-chaeryn').value;
             const ynAmt = document.getElementById('form-amount-yuna').value;
+            const chCal = document.getElementById('form-calcium-chaeryn').value;
+            const ynCal = document.getElementById('form-calcium-yuna').value;
             
             const chaerynVal = chAmt === '' ? 0 : parseInt(chAmt, 10);
             const yunaVal = ynAmt === '' ? 0 : parseInt(ynAmt, 10);
+            const chaerynCalVal = chCal === '' ? 0 : parseFloat(chCal);
+            const yunaCalVal = ynCal === '' ? 0 : parseFloat(ynCal);
             
-            if(chaerynVal < 0 || yunaVal < 0) return alert('유효한 용량을 입력하세요.');
-            if(chaerynVal === 0 && yunaVal === 0) return alert('최소 한 명의 수유량은 입력해야 합니다.');
+            if(chaerynVal < 0 || yunaVal < 0 || chaerynCalVal < 0 || yunaCalVal < 0) return alert('유효한 값을 입력하세요.');
+            if(chaerynVal === 0 && yunaVal === 0 && chaerynCalVal === 0 && yunaCalVal === 0) return alert('수유량이나 칼슘을 1가지 이상 입력해야 합니다.');
             
             const newRec = {
                 id: String(Date.now()),
@@ -437,13 +530,15 @@
                 time: document.getElementById('form-time').value,
                 chaeryn: chaerynVal,
                 yuna: yunaVal,
+                chaerynCalcium: chaerynCalVal,
+                yunaCalcium: yunaCalVal,
                 memo: document.getElementById('form-memo').value
             };
 
             records.unshift(newRec);
             records = sortRecordsNewestFirst(records);
             
-            localStorage.setItem('twin_records_v3', JSON.stringify(records));
+            localStorage.setItem('twin_records_v4', JSON.stringify(records));
             if(sheetApiUrl) syncToGoogleSheet(newRec, 'INSERT');
             
             alert('기록 완료!');
@@ -456,45 +551,58 @@
             records = sortRecordsNewestFirst(records);
             let todayRecs = records.filter(r => formatDateString(r.date) === todayStr);
             
-            let chTotal = 0, ynTotal = 0;
+            let chTotal = 0, ynTotal = 0, chCalTotal = 0, ynCalTotal = 0;
             const listWrapper = document.getElementById('today-records-list');
             listWrapper.innerHTML = '';
 
             todayRecs.forEach(r => {
                 chTotal += (parseInt(r.chaeryn) || 0);
                 ynTotal += (parseInt(r.yuna) || 0);
+                chCalTotal += (parseFloat(r.chaerynCalcium) || 0);
+                ynCalTotal += (parseFloat(r.yunaCalcium) || 0);
                 
                 const item = document.createElement('div');
                 item.className = 'record-item';
                 item.onclick = () => openEditModal(r.id);
                 
-                const hasChaeryn = parseInt(r.chaeryn) > 0;
-                const hasYuna = parseInt(r.yuna) > 0;
+                let displayHtml = '';
                 
-                let displayTag = '';
-                let displayAmount = '';
-                
-                if (hasChaeryn && hasYuna) {
-                    displayTag = `<span class="baby-tag chaeryn">채린</span><span class="baby-tag yuna" style="margin-left:4px;">유나</span>`;
-                    displayAmount = `각 ${r.chaeryn} / ${r.yuna} ml`;
-                } else if (hasChaeryn) {
-                    displayTag = `<span class="baby-tag chaeryn">채린</span>`;
-                    displayAmount = `${r.chaeryn} ml`;
-                } else if (hasYuna) {
-                    displayTag = `<span class="baby-tag yuna">유나</span>`;
-                    displayAmount = `${r.yuna} ml`;
-                } else {
-                    displayTag = `<span class="baby-tag" style="background:#E2E8F0; color:#4A5568;">공통</span>`;
-                    displayAmount = `0 ml`;
+                if (r.chaeryn > 0 || r.chaerynCalcium > 0) {
+                    let chAmts = [];
+                    if(r.chaeryn > 0) chAmts.push(`🍼 ${r.chaeryn}ml`);
+                    if(r.chaerynCalcium > 0) chAmts.push(`🧀 ${r.chaerynCalcium}mg`);
+                    displayHtml += `
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
+                            <span class="baby-tag chaeryn">채린</span>
+                            <span class="record-amount">${chAmts.join(' <span style="color:#ccc;">|</span> ')}</span>
+                        </div>`;
                 }
                 
+                if (r.yuna > 0 || r.yunaCalcium > 0) {
+                    let ynAmts = [];
+                    if(r.yuna > 0) ynAmts.push(`🍼 ${r.yuna}ml`);
+                    if(r.yunaCalcium > 0) ynAmts.push(`🧀 ${r.yunaCalcium}mg`);
+                    displayHtml += `
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="baby-tag yuna">유나</span>
+                            <span class="record-amount">${ynAmts.join(' <span style="color:#ccc;">|</span> ')}</span>
+                        </div>`;
+                }
+                
+                if (displayHtml === '') {
+                    displayHtml = `
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span class="baby-tag" style="background:#E2E8F0; color:#4A5568;">공통</span>
+                            <span class="record-amount">0</span>
+                        </div>`;
+                }
+
                 let memoHtml = r.memo ? `<div class="record-memo-text">📝 ${r.memo}</div>` : '';
                 
                 item.innerHTML = `
-                    <div class="record-left">
-                        <div class="record-row-top">
-                            ${displayTag}
-                            <span class="record-amount" style="margin-left:4px;">${displayAmount}</span>
+                    <div class="record-left" style="width: 80%;">
+                        <div style="display:flex; flex-direction:column; width:100%;">
+                            ${displayHtml}
                         </div>
                         ${memoHtml}
                     </div>
@@ -503,8 +611,10 @@
                 listWrapper.appendChild(item);
             });
 
-            document.getElementById('home-chaeryn-total').innerText = chTotal;
-            document.getElementById('home-yuna-total').innerText = ynTotal;
+            document.getElementById('home-chaeryn-total').innerText = chTotal + 'ml';
+            document.getElementById('home-yuna-total').innerText = ynTotal + 'ml';
+            document.getElementById('home-chaeryn-calcium').innerText = chCalTotal;
+            document.getElementById('home-yuna-calcium').innerText = ynCalTotal;
             document.getElementById('home-total-all').innerText = chTotal + ynTotal;
         }
 
@@ -513,8 +623,10 @@
             if(!target) return;
             selectedRecordId = id;
             document.getElementById('modal-date-title').innerText = `${target.time} 기록 편집`;
-            document.getElementById('modal-chaeryn-amount').value = target.chaeryn;
-            document.getElementById('modal-yuna-amount').value = target.yuna;
+            document.getElementById('modal-chaeryn-amount').value = target.chaeryn || '';
+            document.getElementById('modal-yuna-amount').value = target.yuna || '';
+            document.getElementById('modal-chaeryn-calcium').value = target.chaerynCalcium || '';
+            document.getElementById('modal-yuna-calcium').value = target.yunaCalcium || '';
             document.getElementById('modal-memo').value = target.memo || '';
             document.getElementById('edit-modal').classList.add('active');
         }
@@ -524,16 +636,14 @@
         function executeModify() {
             const idx = records.findIndex(r => r.id === String(selectedRecordId));
             if(idx > -1) {
-                const chInput = document.getElementById('modal-chaeryn-amount').value;
-                const ynInput = document.getElementById('modal-yuna-amount').value;
-                const memoInput = document.getElementById('modal-memo').value;
-                
-                records[idx].chaeryn = chInput === '' ? 0 : parseInt(chInput, 10) || 0;
-                records[idx].yuna = ynInput === '' ? 0 : parseInt(ynInput, 10) || 0;
-                records[idx].memo = memoInput;
+                records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value, 10) || 0;
+                records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value, 10) || 0;
+                records[idx].chaerynCalcium = parseFloat(document.getElementById('modal-chaeryn-calcium').value) || 0;
+                records[idx].yunaCalcium = parseFloat(document.getElementById('modal-yuna-calcium').value) || 0;
+                records[idx].memo = document.getElementById('modal-memo').value;
                 
                 records = sortRecordsNewestFirst(records);
-                localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                localStorage.setItem('twin_records_v4', JSON.stringify(records));
                 if(sheetApiUrl) syncToGoogleSheet(records[idx], 'UPDATE');
                 
                 alert('변경되었습니다.');
@@ -546,7 +656,7 @@
             if(confirm('이 내역을 삭제할까요?')) {
                 const target = records.find(r => r.id === String(selectedRecordId));
                 records = records.filter(r => r.id !== String(selectedRecordId));
-                localStorage.setItem('twin_records_v3', JSON.stringify(records));
+                localStorage.setItem('twin_records_v4', JSON.stringify(records));
                 if(sheetApiUrl && target) syncToGoogleSheet(target, 'DELETE');
                 
                 alert('삭제 완료');
@@ -586,15 +696,35 @@
                     dItem.className = 'record-item';
                     dItem.onclick = () => openEditModal(dr.id);
                     
-                    let memoHtml = dr.memo ? `<div style="color:#7F8C8D; font-size:12px; margin-top:4px;">📝 ${dr.memo}</div>` : '';
+                    let statsAmtsHtml = '';
+                    if (dr.chaeryn > 0 || dr.chaerynCalcium > 0) {
+                        let chA = [];
+                        if(dr.chaeryn > 0) chA.push(`🍼${dr.chaeryn}ml`);
+                        if(dr.chaerynCalcium > 0) chA.push(`🧀${dr.chaerynCalcium}mg`);
+                        statsAmtsHtml += `
+                            <div style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+                                <span class="baby-tag chaeryn" style="padding:2px 6px; font-size:11px;">채린</span> 
+                                <span style="font-size:12px; font-weight:600;">${chA.join(' <span style="color:#ccc;">|</span> ')}</span>
+                            </div>`;
+                    }
                     
+                    if (dr.yuna > 0 || dr.yunaCalcium > 0) {
+                        let ynA = [];
+                        if(dr.yuna > 0) ynA.push(`🍼${dr.yuna}ml`);
+                        if(dr.yunaCalcium > 0) ynA.push(`🧀${dr.yunaCalcium}mg`);
+                        statsAmtsHtml += `
+                            <div style="margin-top:6px; display:flex; align-items:center; gap:8px;">
+                                <span class="baby-tag yuna" style="padding:2px 6px; font-size:11px;">유나</span> 
+                                <span style="font-size:12px; font-weight:600;">${ynA.join(' <span style="color:#ccc;">|</span> ')}</span>
+                            </div>`;
+                    }
+
+                    let memoHtml = dr.memo ? `<div style="color:#7F8C8D; font-size:12px; margin-top:6px;">📝 ${dr.memo}</div>` : '';
+
                     dItem.innerHTML = `
-                        <div style="display:flex; flex-direction:column; gap:2px; width:80%;">
+                        <div style="display:flex; flex-direction:column; width:85%;">
                             <span style="font-weight:bold; font-size:13px;">📅 ${formatDateString(dr.date)} <span style="color:#95A5A6;font-weight:normal;">[${dr.time}]</span></span>
-                            <div style="display:flex; gap:10px; font-size:12px; margin-top:2px;">
-                                <span style="color:var(--chaeryn-color)">채린: ${dr.chaeryn}ml</span>
-                                <span style="color:var(--yuna-color)">유나: ${dr.yuna}ml</span>
-                            </div>
+                            ${statsAmtsHtml}
                             ${memoHtml}
                         </div>
                         <span style="color:#ccc; font-size:12px;">➔</span>
@@ -654,7 +784,9 @@
                     date: formatDateString(record.date),
                     time: record.time,
                     chaeryn: parseInt(record.chaeryn, 10) || 0, 
-                    yuna: parseInt(record.yuna, 10) || 0,       
+                    yuna: parseInt(record.yuna, 10) || 0,
+                    chaerynCalcium: parseFloat(record.chaerynCalcium) || 0,
+                    yunaCalcium: parseFloat(record.yunaCalcium) || 0,
                     memo: record.memo || ''
                 })
             });
@@ -666,34 +798,30 @@
 				return;
 			}
 			
-			// 카카오톡 웹뷰 캐싱방지 및 리다이렉트 추적 강제화 설정
 			const cacheBuster = `_ts=${Date.now()}`;
 			const separator = sheetApiUrl.includes('?') ? '&' : '?';
 			const finalUrl = `${sheetApiUrl}${separator}${cacheBuster}`;
 
-			// 표준 Fetch API + CORS Mode 가동
 			fetch(finalUrl, {
 				method: 'GET',
-				mode: 'cors', // CORS 통신 명시
-				redirect: 'follow' // 구글 매크로서버의 302 리다이렉트를 브라우저가 자동 추적하도록 설정
+				mode: 'cors',
+				redirect: 'follow'
 			})
 			.then(response => {
 				if (!response.ok) throw new Error('네트워크 응답 불량');
-				return response.json(); // 응답을 순수 JSON으로 파싱
+				return response.json(); 
 			})
 			.then(data => {
 				if (Array.isArray(data)) {
 					records = data;
-					localStorage.setItem('twin_records_v3', JSON.stringify(records));
+					localStorage.setItem('twin_records_v4', JSON.stringify(records));
 					if (currentTab === 'home') updateDashboard();
 					else if (currentTab === 'stats') updateStats();
-					console.log('원격 데이터 동기화 성공 (CORS Fetch)!');
 				}
 				if(onComplete) onComplete();
 			})
 			.catch(error => {
-				console.error('구글 데이터 호출 실패 (CORS 에러 혹은 주소 오류):', error);
-				// 카카오톡 내에서 에러 추적을 쉽게 하기 위해 UI 디버깅 메시지 출력 가능
+				console.error('구글 데이터 호출 실패:', error);
 				if(onComplete) onComplete();
 			});
 		}
