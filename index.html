@@ -19,10 +19,26 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
-        html, body { background-color: var(--bg-color); color: var(--text-dark); overflow-x: hidden; overscroll-behavior-y: contain; }
-        body { padding-bottom: 80px; display: flex; justify-content: center; }
+        
+        html, body { 
+            background-color: var(--bg-color); 
+            color: var(--text-dark); 
+            overflow-x: hidden; 
+            -webkit-overflow-scrolling: touch; 
+            height: 100%; 
+        }
+        
+        body { padding-bottom: 120px; }
 
-        .app-container { width: 100%; max-width: 480px; min-height: 100vh; background: var(--bg-color); position: relative; padding: 20px 16px; }
+        .app-container { 
+            width: 100%; 
+            max-width: 480px; 
+            min-height: 100%; 
+            background: var(--bg-color); 
+            position: relative; 
+            padding: 20px 16px 80px 16px;
+            margin: 0 auto; 
+        }
         
         .ptr-bar { width: 100%; height: 0; overflow: hidden; background: #F1F3F5; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 13px; color: #7F8C8D; font-weight: 600; margin-bottom: 0; transition: height 0.2s ease, margin-bottom 0.2s ease; }
         .ptr-bar.active { height: 44px; margin-bottom: 16px; }
@@ -78,7 +94,6 @@
         .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
         .preset-btn { background: #F1F3F5; border: none; padding: 10px 4px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
         
-        /* 칼슘 프리셋 UI 개선 */
         .calcium-row { display: grid; grid-template-columns: 85px 1fr; gap: 8px; align-items: center; margin-bottom: 12px; }
         .calcium-title-col { display: flex; flex-direction: column; gap: 2px; }
         .preset-calcium-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
@@ -94,7 +109,7 @@
         .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
         .save-btn { width: 100%; background: var(--chaeryn-color); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-        .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 260px; position: relative; }
+        .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 280px; position: relative; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 64px; background: #FFFFFF; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; justify-content: center; align-items: center; color: #95A5A6; font-size: 11px; font-weight: 500; cursor: pointer; background: none; border: none; }
@@ -132,14 +147,14 @@
                     <div class="name">채린 합계</div>
                     <div class="amount">
                         <span id="home-chaeryn-total">0ml</span>
-                        <span class="calcium-badge">🧀 칼슘: <span id="home-chaeryn-calcium">0</span>mg</span>
+                        <span class="calcium-badge">🧀 칼슘(분유포함): <span id="home-chaeryn-calcium">0</span>mg</span>
                     </div>
                 </div>
                 <div class="summary-card yuna">
                     <div class="name">유나 합계</div>
                     <div class="amount">
                         <span id="home-yuna-total">0ml</span>
-                        <span class="calcium-badge">🧀 칼슘: <span id="home-yuna-calcium">0</span>mg</span>
+                        <span class="calcium-badge">🧀 칼슘(분유포함): <span id="home-yuna-calcium">0</span>mg</span>
                     </div>
                 </div>
             </div>
@@ -200,17 +215,17 @@
             <hr style="border:0; border-top:1px dashed var(--border-color); margin: 24px 0;">
 
             <div class="form-group">
-                <label class="form-label">칼슘 섭취량 입력 (mg, 직접 입력 가능)</label>
+                <label class="form-label">칼슘 추가 섭취량 (mg, 분유 제외 별도 간식)</label>
                 <div class="twin-input-grid">
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린 칼슘</span>
+                        <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린 추가 칼슘</span>
                         <div class="input-ml-wrapper">
                             <input type="number" id="form-calcium-chaeryn" class="input-ml chaeryn-field" placeholder="0" onfocus="setFocusField('chaeryn', 'calcium')">
                             <span class="input-unit">mg</span>
                         </div>
                     </div>
                     <div style="display:flex; flex-direction:column; gap:4px;">
-                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나 칼슘</span>
+                        <span style="font-size:12px; font-weight:bold; color:var(--yuna-color); margin-left:4px;">유나 추가 칼슘</span>
                         <div class="input-ml-wrapper">
                             <input type="number" id="form-calcium-yuna" class="input-ml yuna-field" placeholder="0" onfocus="setFocusField('yuna', 'calcium')">
                             <span class="input-unit">mg</span>
@@ -273,7 +288,7 @@
         </div>
 
         <div id="tab-stats" class="tab-content">
-            <header><div class="date-title">수유 데이터 통계</div></header>
+            <header><div class="date-title">수유 & 칼슘 데이터 통계</div></header>
             
             <div class="chart-box">
                 <canvas id="twinChart"></canvas>
@@ -398,6 +413,8 @@
                 document.getElementById('tab-sheets').classList.add('active');
                 document.getElementById('nav-sheets').classList.add('active');
             }
+            
+            window.scrollTo(0, 0); 
         }
 
         function openRecordForm() {
@@ -408,7 +425,6 @@
             document.getElementById('form-calcium-yuna').value = '';
             document.getElementById('form-memo').value = '';
             
-            // 직접입력 칸 초기화
             document.querySelectorAll('.preset-input').forEach(input => input.value = '');
             
             const now = new Date();
@@ -426,7 +442,7 @@
 
         function setFocusBaby(baby) {
             if (focusedBaby !== baby) {
-                clearCalciumToggles(); // 아이가 바뀌면 버튼 토글 색상 초기화
+                clearCalciumToggles(); 
             }
             focusedBaby = baby;
             document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
@@ -443,46 +459,40 @@
             focusedType = type;
         }
 
-		// 1. 수유량 버튼 클릭 시 호출되는 함수 수정
-		function setFocusedAmount(val) {
-			// 🍼 수유량 입력창 타겟 설정
-			const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
-			document.getElementById(id).value = val;
-		}
+        function setFocusedAmount(val) {
+            const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
+            document.getElementById(id).value = val;
+        }
 
-		// 2. 수유량 +10/-10 버튼 클릭 시 호출되는 함수 수정
-		function setAmountWithOffset(offset) {
-			// 🍼 수유량 입력창 타겟 설정
-			const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
-			
-			const inputEl = document.getElementById(id);
-			const currentVal = parseFloat(inputEl.value) || 0;
-			let finalVal = currentVal + offset;
-			if (finalVal < 0) finalVal = 0; 
-			inputEl.value = finalVal;
-		}
+        function setAmountWithOffset(offset) {
+            const id = (focusedBaby === 'chaeryn' ? 'form-amount-chaeryn' : 'form-amount-yuna');
+            
+            const inputEl = document.getElementById(id);
+            const currentVal = parseFloat(inputEl.value) || 0;
+            let finalVal = currentVal + offset;
+            if (finalVal < 0) finalVal = 0; 
+            inputEl.value = finalVal;
+        }
 
-		// 3. 칼슘 버튼 클릭 시 (기존 로직 유지하되 타겟 명확화)
-		function toggleCalcium(btn, amount) {
-			// 🧀 칼슘 입력창 타겟 설정
-			const inputId = focusedBaby === 'chaeryn' ? 'form-calcium-chaeryn' : 'form-calcium-yuna';
-			const inputEl = document.getElementById(inputId);
-			let currentVal = parseFloat(inputEl.value) || 0;
-			
-			// 버튼 색상 클래스 적용 (기존 코드의 active-chaeryn/yuna 클래스 활용)
-			const activeClass = focusedBaby === 'chaeryn' ? 'active-chaeryn' : 'active-yuna';
+        function toggleCalcium(btn, amount) {
+            const inputId = focusedBaby === 'chaeryn' ? 'form-calcium-chaeryn' : 'form-calcium-yuna';
+            const inputEl = document.getElementById(inputId);
+            let currentVal = parseFloat(inputEl.value) || 0;
+            
+            const activeClass = focusedBaby === 'chaeryn' ? 'active-chaeryn' : 'active-yuna';
 
-			if (btn.classList.contains(activeClass)) {
-				btn.classList.remove(activeClass);
-				currentVal -= amount;
-			} else {
-				btn.classList.add(activeClass);
-				currentVal += amount;
-			}
-			
-			if (currentVal < 0) currentVal = 0;
-			inputEl.value = currentVal;
-		}
+            if (btn.classList.contains(activeClass)) {
+                btn.classList.remove(activeClass);
+                currentVal -= amount;
+            } else {
+                btn.classList.add(activeClass);
+                currentVal += amount;
+            }
+            
+            if (currentVal < 0) currentVal = 0;
+            inputEl.value = currentVal;
+        }
+        
         function addManualCalcium(inputEl) {
             const val = parseFloat(inputEl.value);
             if (val && val > 0) {
@@ -491,7 +501,7 @@
                 let currentVal = parseFloat(mainInput.value) || 0;
                 mainInput.value = currentVal + val;
             }
-            inputEl.value = ''; // 값 더하고 나면 입력창 비우기
+            inputEl.value = ''; 
         }
 
         function sortRecordsNewestFirst(arr) {
@@ -521,8 +531,12 @@
             const chaerynCalVal = chCal === '' ? 0 : parseFloat(chCal);
             const yunaCalVal = ynCal === '' ? 0 : parseFloat(ynCal);
             
+            const memoText = document.getElementById('form-memo').value.trim();
+
             if(chaerynVal < 0 || yunaVal < 0 || chaerynCalVal < 0 || yunaCalVal < 0) return alert('유효한 값을 입력하세요.');
-            if(chaerynVal === 0 && yunaVal === 0 && chaerynCalVal === 0 && yunaCalVal === 0) return alert('수유량이나 칼슘을 1가지 이상 입력해야 합니다.');
+            if(chaerynVal === 0 && yunaVal === 0 && chaerynCalVal === 0 && yunaCalVal === 0 && memoText === '') {
+                return alert('수유량, 칼슘, 또는 메모 중 1가지 이상 입력해야 합니다.');
+            }
             
             const newRec = {
                 id: String(Date.now()),
@@ -556,10 +570,17 @@
             listWrapper.innerHTML = '';
 
             todayRecs.forEach(r => {
-                chTotal += (parseInt(r.chaeryn) || 0);
-                ynTotal += (parseInt(r.yuna) || 0);
-                chCalTotal += (parseFloat(r.chaerynCalcium) || 0);
-                ynCalTotal += (parseFloat(r.yunaCalcium) || 0);
+                const cMilk = parseInt(r.chaeryn) || 0;
+                const yMilk = parseInt(r.yuna) || 0;
+                const cCal = parseFloat(r.chaerynCalcium) || 0;
+                const yCal = parseFloat(r.yunaCalcium) || 0;
+
+                chTotal += cMilk;
+                ynTotal += yMilk;
+                
+                // 수유량 100ml당 50mg(수유량 * 0.5) 계산 추가
+                chCalTotal += cCal + (cMilk * 0.5);
+                ynCalTotal += yCal + (yMilk * 0.5);
                 
                 const item = document.createElement('div');
                 item.className = 'record-item';
@@ -613,8 +634,8 @@
 
             document.getElementById('home-chaeryn-total').innerText = chTotal + 'ml';
             document.getElementById('home-yuna-total').innerText = ynTotal + 'ml';
-            document.getElementById('home-chaeryn-calcium').innerText = chCalTotal;
-            document.getElementById('home-yuna-calcium').innerText = ynCalTotal;
+            document.getElementById('home-chaeryn-calcium').innerText = Number(chCalTotal.toFixed(1));
+            document.getElementById('home-yuna-calcium').innerText = Number(ynCalTotal.toFixed(1));
             document.getElementById('home-total-all').innerText = chTotal + ynTotal;
         }
 
@@ -674,20 +695,31 @@
             let dayMap = {};
             records.forEach(r => {
                 const normalizedDate = formatDateString(r.date);
-                if(!dayMap[normalizedDate]) dayMap[normalizedDate] = { chaeryn: 0, yuna: 0, details: [] };
-                dayMap[normalizedDate].chaeryn += (parseInt(r.chaeryn) || 0);
-                dayMap[normalizedDate].yuna += (parseInt(r.yuna) || 0);
+                if(!dayMap[normalizedDate]) dayMap[normalizedDate] = { chaeryn: 0, yuna: 0, chaerynCal: 0, yunaCal: 0, details: [] };
+                
+                const cMilk = parseInt(r.chaeryn) || 0;
+                const yMilk = parseInt(r.yuna) || 0;
+                const cCal = parseFloat(r.chaerynCalcium) || 0;
+                const yCal = parseFloat(r.yunaCalcium) || 0;
+
+                dayMap[normalizedDate].chaeryn += cMilk;
+                dayMap[normalizedDate].yuna += yMilk;
+                
+                dayMap[normalizedDate].chaerynCal += cCal + (cMilk * 0.5);
+                dayMap[normalizedDate].yunaCal += yCal + (yMilk * 0.5);
                 dayMap[normalizedDate].details.push(r);
             });
 
             const sortedDates = Object.keys(dayMap).sort((a,b) => b.localeCompare(a)).slice(0, 7);
-            let chartLabels = [], chData = [], ynData = [];
+            let chartLabels = [], chData = [], ynData = [], chCalData = [], ynCalData = [];
 
             const chartDates = [...sortedDates].reverse();
             chartDates.forEach(d => {
                 chartLabels.push(d.substring(5));
                 chData.push(dayMap[d].chaeryn);
                 ynData.push(dayMap[d].yuna);
+                chCalData.push(Number(dayMap[d].chaerynCal.toFixed(1)));
+                ynCalData.push(Number(dayMap[d].yunaCal.toFixed(1)));
             });
 
             sortedDates.forEach(d => {
@@ -742,24 +774,39 @@
                 data: {
                     labels: chartLabels,
                     datasets: [
-                        { label: '채린', data: chData, backgroundColor: 'rgba(255,94,126,0.85)' },
-                        { label: '유나', data: ynData, backgroundColor: 'rgba(91,155,213,0.85)' }
+                        { label: '채린 수유', data: chData, backgroundColor: 'rgba(255,94,126,0.85)' },
+                        { label: '채린 칼슘', data: chCalData, backgroundColor: 'rgba(255,160,180,0.85)' }, 
+                        { label: '유나 수유', data: ynData, backgroundColor: 'rgba(91,155,213,0.85)' },
+                        { label: '유나 칼슘', data: ynCalData, backgroundColor: 'rgba(150,195,235,0.85)' } 
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { position: 'top' },
+                        legend: { 
+                            position: 'top', 
+                            labels: { boxWidth: 10, font: { size: 10 } } 
+                        },
                         datalabels: {
                             display: true,
                             align: 'top',
                             anchor: 'end',
-                            font: { weight: 'bold', size: 10 },
-                            formatter: (val) => val > 0 ? val + 'ml' : ''
+                            font: { weight: 'bold', size: 9 },
+                            formatter: (val, ctx) => {
+                                if(val <= 0) return '';
+                                return ctx.dataset.label.includes('칼슘') ? val + 'mg' : val + 'ml';
+                            }
                         }
                     },
-                    scales: { y: { beginAtZero: true, ticks: { display: false }, grid: { display: false } } }
+                    scales: { 
+                        y: { 
+                            beginAtZero: true, 
+                            ticks: { display: false }, 
+                            grid: { display: false },
+                            grace: '10%' 
+                        } 
+                    }
                 }
             });
         }
@@ -792,66 +839,89 @@
             });
         }
 
-		function pullFromGoogleSheet(onComplete) {
-			if (!sheetApiUrl) {
-				if(onComplete) onComplete();
-				return;
-			}
-			
-			const cacheBuster = `_ts=${Date.now()}`;
-			const separator = sheetApiUrl.includes('?') ? '&' : '?';
-			const finalUrl = `${sheetApiUrl}${separator}${cacheBuster}`;
+        function pullFromGoogleSheet(onComplete) {
+            if (!sheetApiUrl) {
+                if(onComplete) onComplete();
+                return;
+            }
+            
+            const cacheBuster = `_ts=${Date.now()}`;
+            const separator = sheetApiUrl.includes('?') ? '&' : '?';
+            const finalUrl = `${sheetApiUrl}${separator}${cacheBuster}`;
 
-			fetch(finalUrl, {
-				method: 'GET',
-				mode: 'cors',
-				redirect: 'follow'
-			})
-			.then(response => {
-				if (!response.ok) throw new Error('네트워크 응답 불량');
-				return response.json(); 
-			})
-			.then(data => {
-				if (Array.isArray(data)) {
-					records = data;
-					localStorage.setItem('twin_records_v4', JSON.stringify(records));
-					if (currentTab === 'home') updateDashboard();
-					else if (currentTab === 'stats') updateStats();
-				}
-				if(onComplete) onComplete();
-			})
-			.catch(error => {
-				console.error('구글 데이터 호출 실패:', error);
-				if(onComplete) onComplete();
-			});
-		}
+            fetch(finalUrl, {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow'
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('네트워크 응답 불량');
+                return response.json(); 
+            })
+            .then(data => {
+                if (Array.isArray(data)) {
+                    records = data;
+                    localStorage.setItem('twin_records_v4', JSON.stringify(records));
+                    if (currentTab === 'home') updateDashboard();
+                    else if (currentTab === 'stats') updateStats();
+                }
+                if(onComplete) onComplete();
+            })
+            .catch(error => {
+                console.error('구글 데이터 호출 실패:', error);
+                if(onComplete) onComplete();
+            });
+        }
 
         function initSimplifiedPullToRefresh() {
             const bar = document.getElementById('ptr-bar');
             const spinner = document.getElementById('ptr-spinner');
             const text = document.getElementById('ptr-text');
 
+            // 브라우저 기본 당겨서 새로고침 방지 (iOS/Android 네이티브 PTR 간섭 해결)
+            document.body.style.overscrollBehaviorY = 'contain';
+
             window.addEventListener('touchstart', (e) => {
-                if (window.scrollY === 0 && !isSyncing) {
+                const modal = document.getElementById('edit-modal');
+                if (modal && modal.classList.contains('active')) {
+                    touchStartY = 0;
+                    return;
+                }
+
+                const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                if (scrollTop <= 10 && !isSyncing) {
                     touchStartY = e.touches[0].clientY;
+                } else {
+                    touchStartY = 0;
                 }
             }, { passive: true });
 
             window.addEventListener('touchmove', (e) => {
-                if (touchStartY === 0 || isSyncing || window.scrollY > 0) return;
+                if (touchStartY === 0 || isSyncing) return;
                 
                 const currentY = e.touches[0].clientY;
                 const diff = currentY - touchStartY;
 
-                if (diff > 80 && (currentTab === 'home' || currentTab === 'stats')) {
-                    bar.classList.add('active');
-                    text.innerText = '놓으면 동기화 시작';
+                // 스크롤이 최상단일 때 아래로 당기는 경우에만 커스텀 UI 작동
+                const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+                
+                if (scrollTop <= 10 && diff > 0) {
+                    // 브라우저 기본 스크롤/바운스 동작 막기
+                    if(e.cancelable) {
+                        e.preventDefault();
+                    }
+
+                    if (diff > 60 && (currentTab === 'home' || currentTab === 'stats')) {
+                        bar.classList.add('active');
+                        text.innerText = '놓으면 동기화 시작';
+                    } else {
+                        bar.classList.remove('active');
+                        text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                    }
                 }
-            }, { passive: true });
+            }, { passive: false }); // 주의: e.preventDefault() 호출을 위해 반드시 false여야 함
 
             window.addEventListener('touchend', () => {
-                touchStartY = 0;
-                
                 if (bar.classList.contains('active') && !isSyncing) {
                     isSyncing = true;
                     spinner.style.display = 'inline-block';
@@ -866,7 +936,19 @@
                     });
                 } else if (!isSyncing) {
                     bar.classList.remove('active');
+                    text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
                 }
+                
+                touchStartY = 0;
+            });
+
+            // 화면을 벗어나거나 예기치 않게 터치가 끊겼을 때 상태 초기화
+            window.addEventListener('touchcancel', () => {
+                if (!isSyncing) {
+                    bar.classList.remove('active');
+                    text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                }
+                touchStartY = 0;
             });
         }
     </script>
