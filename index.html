@@ -324,6 +324,13 @@
                 <div class="modal-header" id="modal-date-title">기록 편집</div>
                 
                 <div class="form-group">
+                    <label class="form-label">기록 시간 수정</label>
+                    <div class="time-wrapper">
+                        <input type="time" id="modal-time" class="time-input" style="width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-group">
                     <label class="form-label" style="color:var(--chaeryn-color)">채린 수유(ml) / 칼슘(mg)</label>
                     <div style="display:flex; gap:8px;">
                         <input type="number" id="modal-chaeryn-amount" class="input-ml" placeholder="수유량">
@@ -644,6 +651,7 @@
             if(!target) return;
             selectedRecordId = id;
             document.getElementById('modal-date-title').innerText = `${target.time} 기록 편집`;
+            document.getElementById('modal-time').value = target.time || '';
             document.getElementById('modal-chaeryn-amount').value = target.chaeryn || '';
             document.getElementById('modal-yuna-amount').value = target.yuna || '';
             document.getElementById('modal-chaeryn-calcium').value = target.chaerynCalcium || '';
@@ -657,6 +665,7 @@
         function executeModify() {
             const idx = records.findIndex(r => r.id === String(selectedRecordId));
             if(idx > -1) {
+                records[idx].time = document.getElementById('modal-time').value || records[idx].time;
                 records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value, 10) || 0;
                 records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value, 10) || 0;
                 records[idx].chaerynCalcium = parseFloat(document.getElementById('modal-chaeryn-calcium').value) || 0;
