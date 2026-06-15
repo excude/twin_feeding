@@ -215,7 +215,7 @@
             <hr style="border:0; border-top:1px dashed var(--border-color); margin: 24px 0;">
 
             <div class="form-group">
-                <label class="form-label">칼슘 추가 섭취량 (mg, 분유 제외 별도 간식)</label>
+                <label class="form-label">칼슘 추가 섭취량 (분유 제외 별도 간식)</label>
                 <div class="twin-input-grid">
                     <div style="display:flex; flex-direction:column; gap:4px;">
                         <span style="font-size:12px; font-weight:bold; color:var(--chaeryn-color); margin-left:4px;">채린 추가 칼슘</span>
@@ -244,29 +244,29 @@
                         <div class="preset-calcium-grid">
                             <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 70)">0.5장</button>
                             <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 140)">1장</button>
-                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                            <input type="number" class="preset-input" placeholder="수동입력(장)" data-mg-per-unit="140" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
                     <div class="calcium-row">
                         <div class="calcium-title-col">
                             <span style="font-size: 13px; font-weight: bold; color: #2980B9; white-space: nowrap;">🥛 우유</span>
-                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1잔: 200mg)</span>
+                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(100ml: 100mg)</span>
                         </div>
                         <div class="preset-calcium-grid">
-                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 100)">0.5잔</button>
-                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 200)">1잔</button>
-                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 50)">50ml</button>
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 100)">100ml</button>
+                            <input type="number" class="preset-input" placeholder="수동입력(ml)" data-mg-per-unit="1" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
                     <div class="calcium-row">
                         <div class="calcium-title-col">
                             <span style="font-size: 13px; font-weight: bold; color: #16A085; white-space: nowrap;">🥛 고칼슘우유</span>
-                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1잔: 450mg)</span>
+                            <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(100ml: 225mg)</span>
                         </div>
                         <div class="preset-calcium-grid">
-                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 225)">0.5잔</button>
-                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 450)">1잔</button>
-                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 112.5)">50ml</button>
+                            <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 225)">100ml</button>
+                            <input type="number" class="preset-input" placeholder="수동입력(ml)" data-mg-per-unit="2.25" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
                     <div class="calcium-row">
@@ -277,7 +277,7 @@
                         <div class="preset-calcium-grid">
                             <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 42.5)">0.5컵</button>
                             <button class="preset-btn calcium-toggle" onclick="toggleCalcium(this, 85)">1컵</button>
-                            <input type="number" class="preset-input" placeholder="수동입력(mg)" onblur="addManualCalcium(this)">
+                            <input type="number" class="preset-input" placeholder="수동입력(컵)" data-mg-per-unit="85" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
                 </div>
@@ -512,14 +512,22 @@
         }
         
         function addManualCalcium(inputEl) {
-            const val = parseFloat(inputEl.value);
-            if (val && val > 0) {
+            const val = parseFloat(inputEl.value) || 0;
+            const oldVal = parseFloat(inputEl.dataset.oldVal) || 0;
+            const diff = val - oldVal;
+            
+            if (diff !== 0) {
+                const multiplier = parseFloat(inputEl.dataset.mgPerUnit) || 1;
                 const id = focusedBaby === 'chaeryn' ? 'form-calcium-chaeryn' : 'form-calcium-yuna';
                 const mainInput = document.getElementById(id);
                 let currentVal = parseFloat(mainInput.value) || 0;
-                mainInput.value = currentVal + val;
+                
+                let finalVal = currentVal + (diff * multiplier);
+                if (finalVal < 0) finalVal = 0;
+                mainInput.value = finalVal;
+                
+                inputEl.dataset.oldVal = val;
             }
-            inputEl.value = ''; 
         }
 
         function sortRecordsNewestFirst(arr) {
