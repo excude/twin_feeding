@@ -4,8 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채린&유나 쌍둥이 수유 기록기</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #FAF8F5;
@@ -134,7 +139,7 @@
         <div id="tab-home" class="tab-content active">
             <div class="ptr-bar" id="ptr-bar">
                 <div class="ptr-spinner" id="ptr-spinner"></div>
-                <span id="ptr-text">↓ 아래로 당겨서 구글 시트 동기화</span>
+                <span id="ptr-text">↓ 아래로 당겨서 동기화</span>
             </div>
 
             <header>
@@ -284,6 +289,13 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label">날짜</label>
+                <div class="time-wrapper">
+                    <input type="date" id="form-date" class="time-input" style="width: 100%;">
+                </div>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">시간</label>
                 <div class="time-wrapper">
                     <input type="time" id="form-time" class="time-input">
@@ -311,11 +323,13 @@
 
         <div id="tab-sheets" class="tab-content">
             <header><div class="date-title">클라우드 연동</div></header>
-            <div class="form-group" style="margin-top:20px;">
-                <label class="form-label">Google Apps Script 웹 앱 URL</label>
-                <input type="text" id="sheet-api-url" class="input-ml" placeholder="https://script.google.com/macros/s/.../exec">
+            <div style="margin-top:20px; padding: 20px; text-align: center; background: #fff; border-radius: 12px; color: #2C3E50;">
+                <div style="font-size: 30px; margin-bottom: 10px;">🔥</div>
+                <h3 style="margin-bottom: 10px;" id="firebase-status-title">Firebase 설정 대기 중</h3>
+                <p style="font-size: 14px; color: #7F8C8D; line-height: 1.5;" id="firebase-status-desc">
+                    코드 내부의 firebaseConfig에 본인의 키 값을 입력해주세요.<br>현재는 스마트폰 자체 저장소(로컬)로만 동작합니다.
+                </p>
             </div>
-            <button class="save-btn" onclick="saveSheetConfig()">연동 설정 저장</button>
         </div>
 
         <nav class="bottom-nav">
@@ -334,6 +348,13 @@
             <div class="modal-content">
                 <div class="modal-header" id="modal-date-title">기록 편집</div>
                 
+                <div class="form-group">
+                    <label class="form-label">기록 날짜 수정</label>
+                    <div class="time-wrapper">
+                        <input type="date" id="modal-date" class="time-input" style="width: 100%;">
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="form-label">기록 시간 수정</label>
                     <div class="time-wrapper">
@@ -371,17 +392,40 @@
     </div>
 
     <script>
+        // 1. 핵심 변수들을 가장 먼저 선언 (에러 발생 시에도 앱이 안 멈추게 함)
         let records = JSON.parse(localStorage.getItem('twin_records_v4')) || [];
-        let sheetApiUrl = localStorage.getItem('twin_api_url_v3') || 'https://script.google.com/macros/s/AKfycbw32hCoTJ5S3IU-gGHN4QF7s16h1h-ob4FFpD-oDxnvPaJfzNn8RO4S5fSiAxw3fiwRLw/exec';
         let selectedRecordId = null;
         let myChart = null;
         let currentTab = 'home';
-        
         let focusedBaby = 'chaeryn'; 
         let focusedType = 'milk'; 
-
         let touchStartY = 0;
         let isSyncing = false;
+        let db = null;
+
+        // 2. 파이어베이스 초기화 (오류 방지 블록 추가)
+        try {
+            // Your web app's Firebase configuration
+            const firebaseConfig = {
+              apiKey: "AIzaSyCZcWe_m434RleukLeKAk1kpLn90D1n6F0",
+              authDomain: "new-project-f5397.firebaseapp.com",
+              projectId: "new-project-f5397",
+              storageBucket: "new-project-f5397.firebasestorage.app",
+              messagingSenderId: "803621276052",
+              appId: "1:803621276052:web:d529b3cbdba52e2c366781"
+            };
+
+            if (!firebaseConfig.apiKey) {
+                console.warn("Firebase 설정값이 입력되지 않아 로컬 저장소 모드로만 동작합니다.");
+            } else {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+                document.getElementById('firebase-status-title').innerText = "Firebase 연동 완료";
+                document.getElementById('firebase-status-desc').innerText = "현재 데이터는 실시간으로 클라우드에 안전하게 저장되고 있습니다.";
+            }
+        } catch (error) {
+            console.error("Firebase 로딩 중 에러 발생:", error);
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             setTodayDateTitle();
@@ -390,10 +434,8 @@
             
             updateDashboard();
             initSimplifiedPullToRefresh();
-            if(sheetApiUrl) {
-                document.getElementById('sheet-api-url').value = sheetApiUrl;
-                pullFromGoogleSheet();
-            }
+            
+            if (db) pullData(); // 파이어베이스가 정상적으로 켜졌을 때만 데이터 불러오기
         });
 
         function setTodayDateTitle() {
@@ -446,6 +488,7 @@
             document.querySelectorAll('.preset-input').forEach(input => input.value = '');
             
             const now = new Date();
+            document.getElementById('form-date').value = getTodayDateString();
             document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
             
             clearCalciumToggles();
@@ -566,7 +609,7 @@
             
             const newRec = {
                 id: String(Date.now()),
-                date: getTodayDateString(),
+                date: document.getElementById('form-date').value || getTodayDateString(),
                 time: document.getElementById('form-time').value,
                 chaeryn: chaerynVal,
                 yuna: yunaVal,
@@ -579,7 +622,7 @@
             records = sortRecordsNewestFirst(records);
             
             localStorage.setItem('twin_records_v4', JSON.stringify(records));
-            if(sheetApiUrl) syncToGoogleSheet(newRec, 'INSERT');
+            syncData(newRec, 'INSERT'); 
             
             alert('기록 완료!');
             switchTab('home');
@@ -604,7 +647,6 @@
                 chTotal += cMilk;
                 ynTotal += yMilk;
                 
-                // 수유량 100ml당 50mg(수유량 * 0.5) 계산 추가
                 chCalTotal += cCal + (cMilk * 0.5);
                 ynCalTotal += yCal + (yMilk * 0.5);
                 
@@ -670,6 +712,7 @@
             if(!target) return;
             selectedRecordId = id;
             document.getElementById('modal-date-title').innerText = `${target.time} 기록 편집`;
+            document.getElementById('modal-date').value = formatDateString(target.date) || '';
             document.getElementById('modal-time').value = target.time || '';
             document.getElementById('modal-chaeryn-amount').value = target.chaeryn || '';
             document.getElementById('modal-yuna-amount').value = target.yuna || '';
@@ -684,6 +727,7 @@
         function executeModify() {
             const idx = records.findIndex(r => r.id === String(selectedRecordId));
             if(idx > -1) {
+                records[idx].date = document.getElementById('modal-date').value || records[idx].date;
                 records[idx].time = document.getElementById('modal-time').value || records[idx].time;
                 records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value, 10) || 0;
                 records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value, 10) || 0;
@@ -693,7 +737,7 @@
                 
                 records = sortRecordsNewestFirst(records);
                 localStorage.setItem('twin_records_v4', JSON.stringify(records));
-                if(sheetApiUrl) syncToGoogleSheet(records[idx], 'UPDATE');
+                syncData(records[idx], 'UPDATE'); 
                 
                 alert('변경되었습니다.');
                 closeModal();
@@ -706,7 +750,8 @@
                 const target = records.find(r => r.id === String(selectedRecordId));
                 records = records.filter(r => r.id !== String(selectedRecordId));
                 localStorage.setItem('twin_records_v4', JSON.stringify(records));
-                if(sheetApiUrl && target) syncToGoogleSheet(target, 'DELETE');
+                
+                if (target) syncData(target, 'DELETE');
                 
                 alert('삭제 완료');
                 closeModal();
@@ -839,65 +884,38 @@
             });
         }
 
-        function saveSheetConfig() {
-            const url = document.getElementById('sheet-api-url').value.trim();
-            localStorage.setItem('twin_api_url_v3', url);
-            sheetApiUrl = url;
-            alert('서버 주소가 등록되었습니다.');
-            pullFromGoogleSheet();
+        function syncData(record, actionType) {
+            if (!db) return; // 파이어베이스 연결 안 됐을 땐 종료
+            const docRef = db.collection("feeding_records").doc(String(record.id));
+
+            if (actionType === 'DELETE') {
+                docRef.delete().catch(error => console.error("삭제 에러:", error));
+            } else {
+                docRef.set(record).catch(error => console.error("저장 에러:", error));
+            }
         }
 
-        function syncToGoogleSheet(record, actionType) {
-            if(!sheetApiUrl) return;
-            fetch(sheetApiUrl, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    action: actionType,
-                    id: String(record.id),
-                    date: formatDateString(record.date),
-                    time: record.time,
-                    chaeryn: parseInt(record.chaeryn, 10) || 0, 
-                    yuna: parseInt(record.yuna, 10) || 0,
-                    chaerynCalcium: parseFloat(record.chaerynCalcium) || 0,
-                    yunaCalcium: parseFloat(record.yunaCalcium) || 0,
-                    memo: record.memo || ''
-                })
-            });
-        }
-
-        function pullFromGoogleSheet(onComplete) {
-            if (!sheetApiUrl) {
-                if(onComplete) onComplete();
+        function pullData(onComplete) {
+            if (!db) {
+                if (onComplete) onComplete();
                 return;
             }
-            
-            const cacheBuster = `_ts=${Date.now()}`;
-            const separator = sheetApiUrl.includes('?') ? '&' : '?';
-            const finalUrl = `${sheetApiUrl}${separator}${cacheBuster}`;
-
-            fetch(finalUrl, {
-                method: 'GET',
-                mode: 'cors',
-                redirect: 'follow'
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('네트워크 응답 불량');
-                return response.json(); 
-            })
-            .then(data => {
-                if (Array.isArray(data)) {
-                    records = data;
-                    localStorage.setItem('twin_records_v4', JSON.stringify(records));
-                    if (currentTab === 'home') updateDashboard();
-                    else if (currentTab === 'stats') updateStats();
-                }
-                if(onComplete) onComplete();
-            })
-            .catch(error => {
-                console.error('구글 데이터 호출 실패:', error);
-                if(onComplete) onComplete();
+            db.collection("feeding_records").get().then((querySnapshot) => {
+                let fetchedRecords = [];
+                querySnapshot.forEach((doc) => {
+                    fetchedRecords.push(doc.data());
+                });
+                
+                records = sortRecordsNewestFirst(fetchedRecords);
+                localStorage.setItem('twin_records_v4', JSON.stringify(records));
+                
+                if (currentTab === 'home') updateDashboard();
+                else if (currentTab === 'stats') updateStats();
+                
+                if (onComplete) onComplete();
+            }).catch((error) => {
+                console.error("데이터 불러오기 실패:", error);
+                if (onComplete) onComplete();
             });
         }
 
@@ -906,7 +924,6 @@
             const spinner = document.getElementById('ptr-spinner');
             const text = document.getElementById('ptr-text');
 
-            // 브라우저 기본 당겨서 새로고침 방지 (iOS/Android 네이티브 PTR 간섭 해결)
             document.body.style.overscrollBehaviorY = 'contain';
 
             window.addEventListener('touchstart', (e) => {
@@ -930,11 +947,9 @@
                 const currentY = e.touches[0].clientY;
                 const diff = currentY - touchStartY;
 
-                // 스크롤이 최상단일 때 아래로 당기는 경우에만 커스텀 UI 작동
                 const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
                 
                 if (scrollTop <= 10 && diff > 0) {
-                    // 브라우저 기본 스크롤/바운스 동작 막기
                     if(e.cancelable) {
                         e.preventDefault();
                     }
@@ -944,37 +959,37 @@
                         text.innerText = '놓으면 동기화 시작';
                     } else {
                         bar.classList.remove('active');
-                        text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                        text.innerText = '↓ 아래로 당겨서 동기화';
                     }
                 }
-            }, { passive: false }); // 주의: e.preventDefault() 호출을 위해 반드시 false여야 함
+            }, { passive: false }); 
 
             window.addEventListener('touchend', () => {
                 if (bar.classList.contains('active') && !isSyncing) {
                     isSyncing = true;
                     spinner.style.display = 'inline-block';
-                    text.innerText = '구글 시트 데이터 가져오는 중...';
-                    pullFromGoogleSheet(() => {
+                    text.innerText = db ? '서버 데이터 가져오는 중...' : '로컬 모드(오프라인)로 동작 중...';
+                    
+                    pullData(() => {
                         setTimeout(() => {
                             bar.classList.remove('active');
                             spinner.style.display = 'none';
-                            text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                            text.innerText = '↓ 아래로 당겨서 동기화';
                             isSyncing = false;
                         }, 600);
                     });
                 } else if (!isSyncing) {
                     bar.classList.remove('active');
-                    text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                    text.innerText = '↓ 아래로 당겨서 동기화';
                 }
                 
                 touchStartY = 0;
             });
 
-            // 화면을 벗어나거나 예기치 않게 터치가 끊겼을 때 상태 초기화
             window.addEventListener('touchcancel', () => {
                 if (!isSyncing) {
                     bar.classList.remove('active');
-                    text.innerText = '↓ 아래로 당겨서 구글 시트 동기화';
+                    text.innerText = '↓ 아래로 당겨서 동기화';
                 }
                 touchStartY = 0;
             });
