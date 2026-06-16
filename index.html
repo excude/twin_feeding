@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -392,16 +393,63 @@
     </div>
 
     <script>
-        // 1. 핵심 변수들을 가장 먼저 선언 (에러 발생 시에도 앱이 안 멈추게 함)
-        let records = JSON.parse(localStorage.getItem('twin_records_v4')) || [];
-        let selectedRecordId = null;
-        let myChart = null;
-        let currentTab = 'home';
-        let focusedBaby = 'chaeryn'; 
-        let focusedType = 'milk'; 
-        let touchStartY = 0;
-        let isSyncing = false;
-        let db = null;
+		// 1. 핵심 변수들을 가장 먼저 선언 (에러 발생 시에도 앱이 안 멈추게 함)
+		let records = JSON.parse(localStorage.getItem('twin_records_v4')) || [];
+		let selectedRecordId = null;
+		let myChart = null;
+		let currentTab = 'home';
+		let focusedBaby = 'chaeryn'; 
+		let focusedType = 'milk'; 
+		let touchStartY = 0;
+		let isSyncing = false;
+		let db = null;
+
+		// ✨ 추가된 부분: 아기별 칼슘 입력창/버튼 상태를 따로 보관하는 객체
+		let calciumStates = {
+			chaeryn: { buttons: [], inputs: [], oldVals: [] },
+			yuna: { buttons: [], inputs: [], oldVals: [] }
+		};
+
+		// ✨ 추가된 부분: 현재 선택된 아이의 입력 상태를 저장하는 함수
+		function saveCalciumState(baby) {
+			const state = { buttons: [], inputs: [], oldVals: [] };
+			
+			// 눌러져 있는(Active) 버튼 상태 기억
+			const btns = document.querySelectorAll('.preset-btn.calcium-toggle');
+			btns.forEach((btn, i) => {
+				state.buttons[i] = btn.classList.contains('active-' + baby);
+			});
+			
+			// 수동 입력창에 적힌 텍스트와 계산용 oldVal 기억
+			const inputs = document.querySelectorAll('.preset-input');
+			inputs.forEach((input, i) => {
+				state.inputs[i] = input.value;
+				state.oldVals[i] = input.dataset.oldVal || '';
+			});
+			
+			calciumStates[baby] = state;
+		}
+
+		// ✨ 추가된 부분: 다른 아이를 눌렀을 때 기존 상태를 화면에 다시 뿌려주는 함수
+		function restoreCalciumState(baby) {
+			const state = calciumStates[baby] || { buttons: [], inputs: [], oldVals: [] };
+			
+			// 버튼의 불을 다 끄고, 저장된 상태에 맞춰 다시 불을 켬
+			const btns = document.querySelectorAll('.preset-btn.calcium-toggle');
+			btns.forEach((btn, i) => {
+				btn.classList.remove('active-chaeryn', 'active-yuna');
+				if (state.buttons && state.buttons[i]) {
+					btn.classList.add(baby === 'chaeryn' ? 'active-chaeryn' : 'active-yuna');
+				}
+			});
+			
+			// 수동 입력창의 숫자도 원래 아이가 입력했던 숫자로 복구
+			const inputs = document.querySelectorAll('.preset-input');
+			inputs.forEach((input, i) => {
+				input.value = (state.inputs && state.inputs[i] !== undefined) ? state.inputs[i] : '';
+				input.dataset.oldVal = (state.oldVals && state.oldVals[i] !== undefined) ? state.oldVals[i] : '';
+			});
+		}
 
         // 2. 파이어베이스 초기화 (오류 방지 블록 추가)
         try {
@@ -477,23 +525,36 @@
             window.scrollTo(0, 0); 
         }
 
-        function openRecordForm() {
-            switchTab('form');
-            document.getElementById('form-amount-chaeryn').value = '';
-            document.getElementById('form-amount-yuna').value = '';
-            document.getElementById('form-calcium-chaeryn').value = '';
-            document.getElementById('form-calcium-yuna').value = '';
-            document.getElementById('form-memo').value = '';
-            
-            document.querySelectorAll('.preset-input').forEach(input => input.value = '');
-            
-            const now = new Date();
-            document.getElementById('form-date').value = getTodayDateString();
-            document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-            
-            clearCalciumToggles();
-            setFocusBaby('chaeryn'); 
-        }
+		function openRecordForm() {
+			switchTab('form');
+			document.getElementById('form-amount-chaeryn').value = '';
+			document.getElementById('form-amount-yuna').value = '';
+			document.getElementById('form-calcium-chaeryn').value = '';
+			document.getElementById('form-calcium-yuna').value = '';
+			document.getElementById('form-memo').value = '';
+			
+			// ✨ 새 폼을 열 때 모든 백그라운드 상태 완전 초기화
+			calciumStates = {
+				chaeryn: { buttons: [], inputs: [], oldVals: [] },
+				yuna: { buttons: [], inputs: [], oldVals: [] }
+			};
+			
+			document.querySelectorAll('.preset-input').forEach(input => {
+				input.value = '';
+				input.dataset.oldVal = ''; // 숨겨진 계산용 이전 값도 비워줍니다
+			});
+			
+			const now = new Date();
+			document.getElementById('form-date').value = getTodayDateString();
+			document.getElementById('form-time').value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+			
+			clearCalciumToggles();
+			
+			// 폼이 열리면 기본으로 채린이 상태를 초기화 후 활성화
+			focusedBaby = 'chaeryn'; 
+			restoreCalciumState('chaeryn'); 
+			setFocusBaby('chaeryn'); 
+		}
 
         function clearCalciumToggles() {
             document.querySelectorAll('.preset-btn.calcium-toggle').forEach(btn => {
@@ -501,19 +562,22 @@
             });
         }
 
-        function setFocusBaby(baby) {
-            if (focusedBaby !== baby) {
-                clearCalciumToggles(); 
-            }
-            focusedBaby = baby;
-            document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
-            
-            if(baby === 'chaeryn') {
-                document.getElementById('btn-select-chaeryn').classList.add('active');
-            } else {
-                document.getElementById('btn-select-yuna').classList.add('active');
-            }
-        }
+		function setFocusBaby(baby) {
+			if (focusedBaby !== baby) {
+				// ✨ 포커스가 바뀔 때: 기존 아이 상태 저장 -> 포커스 변경 -> 새 아이 상태 복원
+				saveCalciumState(focusedBaby);
+				focusedBaby = baby;
+				restoreCalciumState(focusedBaby);
+			}
+			
+			document.querySelectorAll('.selector-btn').forEach(btn => btn.classList.remove('active'));
+			
+			if(baby === 'chaeryn') {
+				document.getElementById('btn-select-chaeryn').classList.add('active');
+			} else {
+				document.getElementById('btn-select-yuna').classList.add('active');
+			}
+		}
 
         function setFocusField(baby, type) {
             setFocusBaby(baby);
