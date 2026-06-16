@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -115,7 +114,7 @@
         .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
         .save-btn { width: 100%; background: var(--chaeryn-color); color: white; border: none; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
 
-        .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; padding: 16px; margin-bottom: 20px; height: 280px; position: relative; }
+        .chart-box { background: white; border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 20px; height: 300px; position: relative; display: flex; flex-direction: column; padding: 16px 16px 0 16px;}
 
         .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 480px; height: 64px; background: #FFFFFF; border-top: 1px solid var(--border-color); display: grid; grid-template-columns: repeat(3, 1fr); z-index: 100; }
         .nav-item { display: flex; flex-direction: column; justify-content: center; align-items: center; color: #95A5A6; font-size: 11px; font-weight: 500; cursor: pointer; background: none; border: none; }
@@ -315,7 +314,18 @@
             <header><div class="date-title">수유 & 칼슘 데이터 통계</div></header>
             
             <div class="chart-box">
-                <canvas id="twinChart"></canvas>
+                <div id="custom-legend" style="display: flex; justify-content: center; gap: 12px; margin-bottom: 12px; font-size: 10px; color: #7F8C8D; font-weight: bold; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background-color: rgba(255,94,126,0.85); display: inline-block; border-radius: 2px;"></span>채린 수유</div>
+                    <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background-color: rgba(255,160,180,0.85); display: inline-block; border-radius: 2px;"></span>채린 칼슘</div>
+                    <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background-color: rgba(91,155,213,0.85); display: inline-block; border-radius: 2px;"></span>유나 수유</div>
+                    <div style="display: flex; align-items: center; gap: 4px;"><span style="width: 10px; height: 10px; background-color: rgba(150,195,235,0.85); display: inline-block; border-radius: 2px;"></span>유나 칼슘</div>
+                </div>
+                
+                <div id="chart-scroll-box" style="overflow-x: auto; overflow-y: hidden; flex: 1; padding-bottom: 16px;">
+                    <div id="chart-wrapper" style="position: relative; height: 100%; min-width: 100%;">
+                        <canvas id="twinChart"></canvas>
+                    </div>
+                </div>
             </div>
 
             <div class="section-title" style="margin-bottom:12px;">전체 일별 상세 (터치 시 수정/삭제)</div>
@@ -393,7 +403,6 @@
     </div>
 
     <script>
-		// 1. 핵심 변수들을 가장 먼저 선언 (에러 발생 시에도 앱이 안 멈추게 함)
 		let records = JSON.parse(localStorage.getItem('twin_records_v4')) || [];
 		let selectedRecordId = null;
 		let myChart = null;
@@ -404,23 +413,19 @@
 		let isSyncing = false;
 		let db = null;
 
-		// ✨ 추가된 부분: 아기별 칼슘 입력창/버튼 상태를 따로 보관하는 객체
 		let calciumStates = {
 			chaeryn: { buttons: [], inputs: [], oldVals: [] },
 			yuna: { buttons: [], inputs: [], oldVals: [] }
 		};
 
-		// ✨ 추가된 부분: 현재 선택된 아이의 입력 상태를 저장하는 함수
 		function saveCalciumState(baby) {
 			const state = { buttons: [], inputs: [], oldVals: [] };
 			
-			// 눌러져 있는(Active) 버튼 상태 기억
 			const btns = document.querySelectorAll('.preset-btn.calcium-toggle');
 			btns.forEach((btn, i) => {
 				state.buttons[i] = btn.classList.contains('active-' + baby);
 			});
 			
-			// 수동 입력창에 적힌 텍스트와 계산용 oldVal 기억
 			const inputs = document.querySelectorAll('.preset-input');
 			inputs.forEach((input, i) => {
 				state.inputs[i] = input.value;
@@ -430,11 +435,9 @@
 			calciumStates[baby] = state;
 		}
 
-		// ✨ 추가된 부분: 다른 아이를 눌렀을 때 기존 상태를 화면에 다시 뿌려주는 함수
 		function restoreCalciumState(baby) {
 			const state = calciumStates[baby] || { buttons: [], inputs: [], oldVals: [] };
 			
-			// 버튼의 불을 다 끄고, 저장된 상태에 맞춰 다시 불을 켬
 			const btns = document.querySelectorAll('.preset-btn.calcium-toggle');
 			btns.forEach((btn, i) => {
 				btn.classList.remove('active-chaeryn', 'active-yuna');
@@ -443,7 +446,6 @@
 				}
 			});
 			
-			// 수동 입력창의 숫자도 원래 아이가 입력했던 숫자로 복구
 			const inputs = document.querySelectorAll('.preset-input');
 			inputs.forEach((input, i) => {
 				input.value = (state.inputs && state.inputs[i] !== undefined) ? state.inputs[i] : '';
@@ -451,9 +453,7 @@
 			});
 		}
 
-        // 2. 파이어베이스 초기화 (오류 방지 블록 추가)
         try {
-            // Your web app's Firebase configuration
             const firebaseConfig = {
               apiKey: "AIzaSyCZcWe_m434RleukLeKAk1kpLn90D1n6F0",
               authDomain: "new-project-f5397.firebaseapp.com",
@@ -483,7 +483,7 @@
             updateDashboard();
             initSimplifiedPullToRefresh();
             
-            if (db) pullData(); // 파이어베이스가 정상적으로 켜졌을 때만 데이터 불러오기
+            if (db) pullData(); 
         });
 
         function setTodayDateTitle() {
@@ -533,7 +533,6 @@
 			document.getElementById('form-calcium-yuna').value = '';
 			document.getElementById('form-memo').value = '';
 			
-			// ✨ 새 폼을 열 때 모든 백그라운드 상태 완전 초기화
 			calciumStates = {
 				chaeryn: { buttons: [], inputs: [], oldVals: [] },
 				yuna: { buttons: [], inputs: [], oldVals: [] }
@@ -541,7 +540,7 @@
 			
 			document.querySelectorAll('.preset-input').forEach(input => {
 				input.value = '';
-				input.dataset.oldVal = ''; // 숨겨진 계산용 이전 값도 비워줍니다
+				input.dataset.oldVal = ''; 
 			});
 			
 			const now = new Date();
@@ -550,7 +549,6 @@
 			
 			clearCalciumToggles();
 			
-			// 폼이 열리면 기본으로 채린이 상태를 초기화 후 활성화
 			focusedBaby = 'chaeryn'; 
 			restoreCalciumState('chaeryn'); 
 			setFocusBaby('chaeryn'); 
@@ -564,7 +562,6 @@
 
 		function setFocusBaby(baby) {
 			if (focusedBaby !== baby) {
-				// ✨ 포커스가 바뀔 때: 기존 아이 상태 저장 -> 포커스 변경 -> 새 아이 상태 복원
 				saveCalciumState(focusedBaby);
 				focusedBaby = baby;
 				restoreCalciumState(focusedBaby);
@@ -847,7 +844,7 @@
                 dayMap[normalizedDate].details.push(r);
             });
 
-            const sortedDates = Object.keys(dayMap).sort((a,b) => b.localeCompare(a)).slice(0, 7);
+            const sortedDates = Object.keys(dayMap).sort((a,b) => b.localeCompare(a));
             let chartLabels = [], chData = [], ynData = [], chCalData = [], ynCalData = [];
 
             const chartDates = [...sortedDates].reverse();
@@ -902,6 +899,13 @@
                 });
             });
 
+            const chartWrapper = document.getElementById('chart-wrapper');
+            if (chartLabels.length > 4) {
+                chartWrapper.style.width = `${(chartLabels.length / 4) * 100}%`;
+            } else {
+                chartWrapper.style.width = '100%';
+            }
+
             const ctx = document.getElementById('twinChart').getContext('2d');
             if(myChart) myChart.destroy();
             
@@ -920,10 +924,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    events: ['click'], // 터치(클릭) 이벤트만 활성화하여 스크롤은 방해하지 않고 툴팁은 보이도록 수정
                     plugins: {
                         legend: { 
-                            position: 'top', 
-                            labels: { boxWidth: 10, font: { size: 10 } } 
+                            display: false // Chart.js 내부 기본 범례 숨김 (외부 고정 범례 사용)
                         },
                         datalabels: {
                             display: true,
@@ -946,10 +950,17 @@
                     }
                 }
             });
+
+            setTimeout(() => {
+                const scrollBox = document.getElementById('chart-scroll-box');
+                if(scrollBox) {
+                    scrollBox.scrollLeft = scrollBox.scrollWidth;
+                }
+            }, 100);
         }
 
         function syncData(record, actionType) {
-            if (!db) return; // 파이어베이스 연결 안 됐을 땐 종료
+            if (!db) return; 
             const docRef = db.collection("feeding_records").doc(String(record.id));
 
             if (actionType === 'DELETE') {
