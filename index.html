@@ -109,6 +109,27 @@
         .preset-input::placeholder { color: #95A5A6; font-size: 12px;}
         .preset-input:focus { border-color: #7F8C8D; }
         
+        /* 고칼슘 우유 구분을 위한 Ca 마크 CSS */
+        .icon-ca-badge {
+            position: relative;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .icon-ca-badge::after {
+            content: "Ca";
+            position: absolute;
+            right: -10px;
+            bottom: -2px;
+            background-color: #E74C3C;
+            color: #FFFFFF;
+            font-size: 8px;
+            font-weight: 800;
+            padding: 1px 3px;
+            border-radius: 4px;
+            line-height: 1;
+            z-index: 1;
+        }
+
         .time-wrapper { background: #F1F3F5; padding: 12px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; }
         .time-input { border: none; background: transparent; font-size: 16px; font-weight: 600; outline: none; }
         .textarea-memo { width: 100%; height: 70px; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; resize: none; outline: none; }
@@ -241,7 +262,7 @@
                 <div style="margin-top: 10px; padding: 12px; background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);">
                     <div style="font-size: 12px; color: #7F8C8D; margin-bottom: 10px; text-align: center;">아래 버튼 클릭 시, 선택된 아이 칸에 합산/차감 됩니다.</div>
                     
-                    <div class="calcium-row">
+                    <div class="calcium-row" data-icon="🧀">
                         <div class="calcium-title-col">
                             <span style="font-size: 13px; font-weight: bold; color: #E67E22; white-space: nowrap;">🧀 치즈</span>
                             <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1장: 140mg)</span>
@@ -252,7 +273,7 @@
                             <input type="number" class="preset-input" placeholder="수동입력(장)" data-mg-per-unit="140" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
-                    <div class="calcium-row">
+                    <div class="calcium-row" data-icon="🥛">
                         <div class="calcium-title-col">
                             <span style="font-size: 13px; font-weight: bold; color: #2980B9; white-space: nowrap;">🥛 우유</span>
                             <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(100ml: 100mg)</span>
@@ -263,9 +284,9 @@
                             <input type="number" class="preset-input" placeholder="수동입력(ml)" data-mg-per-unit="1" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
-                    <div class="calcium-row">
+                    <div class="calcium-row" data-icon='<span class="icon-ca-badge">🥛</span>'>
                         <div class="calcium-title-col">
-                            <span style="font-size: 13px; font-weight: bold; color: #16A085; white-space: nowrap;">🥛 고칼슘우유</span>
+                            <span style="font-size: 13px; font-weight: bold; color: #16A085; white-space: nowrap;"><span class="icon-ca-badge">🥛</span> 고칼슘우유</span>
                             <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(100ml: 225mg)</span>
                         </div>
                         <div class="preset-calcium-grid">
@@ -274,7 +295,7 @@
                             <input type="number" class="preset-input" placeholder="수동입력(ml)" data-mg-per-unit="2.25" onfocus="this.dataset.oldVal=this.value" onblur="addManualCalcium(this)">
                         </div>
                     </div>
-                    <div class="calcium-row">
+                    <div class="calcium-row" data-icon="🍦">
                         <div class="calcium-title-col">
                             <span style="font-size: 13px; font-weight: bold; color: #8E44AD; white-space: nowrap;">🍦 요거트</span>
                             <span style="font-size: 11px; color: #95A5A6; white-space: nowrap;">(1컵: 85mg)</span>
@@ -650,7 +671,40 @@
             });
         }
 
+        // 아이콘 추출 시 텍스트 파싱 대신 data-icon에서 가져오도록 수정
+        function getCalciumIcons(baby) {
+            if (focusedBaby === baby) {
+                saveCalciumState(baby);
+            }
+            const state = calciumStates[baby];
+            if (!state) return '🧀';
+            
+            let icons = new Set();
+            
+            const btns = document.querySelectorAll('.preset-btn.calcium-toggle');
+            btns.forEach((btn, i) => {
+                if (state.buttons && state.buttons[i]) {
+                    const iconVal = btn.closest('.calcium-row').dataset.icon;
+                    if(iconVal) icons.add(iconVal);
+                }
+            });
+            
+            const inputs = document.querySelectorAll('.preset-input');
+            inputs.forEach((input, i) => {
+                if (state.oldVals && parseFloat(state.oldVals[i]) > 0) {
+                    const iconVal = input.closest('.calcium-row').dataset.icon;
+                    if(iconVal) icons.add(iconVal);
+                }
+            });
+            
+            if (icons.size === 0) return '🧀';
+            return Array.from(icons).join(' '); 
+        }
+
         function saveRecord() {
+            // [수정 핵심 1] 저장 직전, 화면에 입력된 양쪽 아이의 칼슘 상태를 강제로 모두 최신 백업
+            saveCalciumState(focusedBaby);
+
             const chAmt = document.getElementById('form-amount-chaeryn').value;
             const ynAmt = document.getElementById('form-amount-yuna').value;
             const chCal = document.getElementById('form-calcium-chaeryn').value;
@@ -668,6 +722,10 @@
                 return alert('수유량, 칼슘, 또는 메모 중 1가지 이상 입력해야 합니다.');
             }
             
+            // [수정 핵심 2] 칼슘값이 존재하면 아이콘을 DB에 강제 주입 (비어있을 시 기본값 '🧀' 보장)
+            const chIcons = chaerynCalVal > 0 ? (getCalciumIcons('chaeryn') || '🧀') : '';
+            const ynIcons = yunaCalVal > 0 ? (getCalciumIcons('yuna') || '🧀') : '';
+
             const newRec = {
                 id: String(Date.now()),
                 date: document.getElementById('form-date').value || getTodayDateString(),
@@ -676,14 +734,16 @@
                 yuna: yunaVal,
                 chaerynCalcium: chaerynCalVal,
                 yunaCalcium: yunaCalVal,
-                memo: document.getElementById('form-memo').value
+                chaerynCalIcons: chIcons, // 파이어베이스 DB에 텍스트로 꽂힘
+                yunaCalIcons: ynIcons,    // 파이어베이스 DB에 텍스트로 꽂힘
+                memo: memoText
             };
 
             records.unshift(newRec);
             records = sortRecordsNewestFirst(records);
             
             localStorage.setItem('twin_records_v4', JSON.stringify(records));
-            syncData(newRec, 'INSERT'); 
+            syncData(newRec, 'INSERT'); // 이 순간 파이어베이스 문서(Doc)에 아이콘까지 통째로 전송
             
             alert('기록 완료!');
             switchTab('home');
@@ -720,7 +780,10 @@
                 if (r.chaeryn > 0 || r.chaerynCalcium > 0) {
                     let chAmts = [];
                     if(r.chaeryn > 0) chAmts.push(`🍼 ${r.chaeryn}ml`);
-                    if(r.chaerynCalcium > 0) chAmts.push(`🧀 ${r.chaerynCalcium}mg`);
+                    if(r.chaerynCalcium > 0) {
+                        const icon = r.chaerynCalIcons || '🧀';
+                        chAmts.push(`${icon} ${r.chaerynCalcium}mg`);
+                    }
                     displayHtml += `
                         <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px;">
                             <span class="baby-tag chaeryn">채린</span>
@@ -731,7 +794,10 @@
                 if (r.yuna > 0 || r.yunaCalcium > 0) {
                     let ynAmts = [];
                     if(r.yuna > 0) ynAmts.push(`🍼 ${r.yuna}ml`);
-                    if(r.yunaCalcium > 0) ynAmts.push(`🧀 ${r.yunaCalcium}mg`);
+                    if(r.yunaCalcium > 0) {
+                        const icon = r.yunaCalIcons || '🧀';
+                        ynAmts.push(`${icon} ${r.yunaCalcium}mg`);
+                    }
                     displayHtml += `
                         <div style="display:flex; align-items:center; gap:8px;">
                             <span class="baby-tag yuna">유나</span>
@@ -792,13 +858,31 @@
                 records[idx].time = document.getElementById('modal-time').value || records[idx].time;
                 records[idx].chaeryn = parseInt(document.getElementById('modal-chaeryn-amount').value, 10) || 0;
                 records[idx].yuna = parseInt(document.getElementById('modal-yuna-amount').value, 10) || 0;
-                records[idx].chaerynCalcium = parseFloat(document.getElementById('modal-chaeryn-calcium').value) || 0;
-                records[idx].yunaCalcium = parseFloat(document.getElementById('modal-yuna-calcium').value) || 0;
+                
+                const newChCal = parseFloat(document.getElementById('modal-chaeryn-calcium').value) || 0;
+                const newYnCal = parseFloat(document.getElementById('modal-yuna-calcium').value) || 0;
+                
+                records[idx].chaerynCalcium = newChCal;
+                records[idx].yunaCalcium = newYnCal;
+
+                // [수정 핵심 3] 모달에서 칼슘을 새로 입력했는데 DB에 아이콘이 없었다면 기본 치즈 주입
+                if (newChCal > 0 && !records[idx].chaerynCalIcons) {
+                    records[idx].chaerynCalIcons = '🧀';
+                } else if (newChCal === 0) {
+                    records[idx].chaerynCalIcons = '';
+                }
+
+                if (newYnCal > 0 && !records[idx].yunaCalIcons) {
+                    records[idx].yunaCalIcons = '🧀';
+                } else if (newYnCal === 0) {
+                    records[idx].yunaCalIcons = '';
+                }
+
                 records[idx].memo = document.getElementById('modal-memo').value;
                 
                 records = sortRecordsNewestFirst(records);
                 localStorage.setItem('twin_records_v4', JSON.stringify(records));
-                syncData(records[idx], 'UPDATE'); 
+                syncData(records[idx], 'UPDATE'); // DB에 수정된 아이콘 정보까지 동기화 완료
                 
                 alert('변경되었습니다.');
                 closeModal();
@@ -866,7 +950,10 @@
                     if (dr.chaeryn > 0 || dr.chaerynCalcium > 0) {
                         let chA = [];
                         if(dr.chaeryn > 0) chA.push(`🍼${dr.chaeryn}ml`);
-                        if(dr.chaerynCalcium > 0) chA.push(`🧀${dr.chaerynCalcium}mg`);
+                        if(dr.chaerynCalcium > 0) {
+                            const icon = dr.chaerynCalIcons || '🧀';
+                            chA.push(`${icon}${dr.chaerynCalcium}mg`);
+                        }
                         statsAmtsHtml += `
                             <div style="margin-top:6px; display:flex; align-items:center; gap:8px;">
                                 <span class="baby-tag chaeryn" style="padding:2px 6px; font-size:11px;">채린</span> 
@@ -877,7 +964,10 @@
                     if (dr.yuna > 0 || dr.yunaCalcium > 0) {
                         let ynA = [];
                         if(dr.yuna > 0) ynA.push(`🍼${dr.yuna}ml`);
-                        if(dr.yunaCalcium > 0) ynA.push(`🧀${dr.yunaCalcium}mg`);
+                        if(dr.yunaCalcium > 0) {
+                            const icon = dr.yunaCalIcons || '🧀';
+                            ynA.push(`${icon}${dr.yunaCalcium}mg`);
+                        }
                         statsAmtsHtml += `
                             <div style="margin-top:6px; display:flex; align-items:center; gap:8px;">
                                 <span class="baby-tag yuna" style="padding:2px 6px; font-size:11px;">유나</span> 
@@ -924,10 +1014,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    events: ['click'], // 터치(클릭) 이벤트만 활성화하여 스크롤은 방해하지 않고 툴팁은 보이도록 수정
+                    events: ['click'],
                     plugins: {
                         legend: { 
-                            display: false // Chart.js 내부 기본 범례 숨김 (외부 고정 범례 사용)
+                            display: false
                         },
                         datalabels: {
                             display: true,
@@ -978,7 +1068,13 @@
             db.collection("feeding_records").get().then((querySnapshot) => {
                 let fetchedRecords = [];
                 querySnapshot.forEach((doc) => {
-                    fetchedRecords.push(doc.data());
+                    const data = doc.data();
+                    
+                    // [수정 핵심 4] DB에 '칼슘양은 있는데 아이콘 필드가 누락된 과거 데이터' 호환 처리
+                    if (data.chaerynCalcium > 0 && !data.chaerynCalIcons) data.chaerynCalIcons = '🧀';
+                    if (data.yunaCalcium > 0 && !data.yunaCalIcons) data.yunaCalIcons = '🧀';
+
+                    fetchedRecords.push(data);
                 });
                 
                 records = sortRecordsNewestFirst(fetchedRecords);
